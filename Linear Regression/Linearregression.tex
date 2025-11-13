@@ -720,9 +720,642 @@ m_N = (\Phi^\top\Phi + \lambda I)^{-1}\Phi^\top t,
 \]
 where \(\lambda = \alpha/\beta\). Note that \(m_N\) equals the ridge/MAP estimator and \(S_N\) quantifies posterior uncertainty.
 % ============================================================
+% ============================================================
+\section{Log-Likelihood and Log-Prior in Bayesian Linear Regression}
 
+\subsection{Model Setup}
+We observe data $(\mathbf{X},\mathbf{y})$ where $\mathbf{X} \in \mathbb{R}^{N \times D}$,
+$\mathbf{y} \in \mathbb{R}^{N}$ and weights $\mathbf{w} \in \mathbb{R}^{D}$.
+The linear-Gaussian model assumes
+\[
+\mathbf{y} = \mathbf{X}\mathbf{w} + \boldsymbol{\epsilon},
+\qquad
+\boldsymbol{\epsilon} \sim \mathcal{N}\big(0,\ \sigma^{2}\mathbf{I}_{N}\big).
+\]
 
+% ------------------------------------------------------------
+\subsection{Log-Likelihood $\,\log p(\mathbf{y}\mid\mathbf{X},\mathbf{w})$}
 
-    
+Because the noise is i.i.d.\ Gaussian,
+\[
+p(\mathbf{y} \mid \mathbf{X},\mathbf{w})
+= \mathcal{N}\big(\mathbf{y} \mid \mathbf{X}\mathbf{w},\ \sigma^{2}\mathbf{I}_N\big).
+\]
+
+Using the multivariate Gaussian density,
+\[
+p(\mathbf{y}\mid\mathbf{X},\mathbf{w})
+= \frac{1}{(2\pi)^{N/2}\sigma^{N}}
+\exp\!\left(
+-\frac{1}{2\sigma^{2}}
+(\mathbf{y}-\mathbf{X}\mathbf{w})^{\top}
+(\mathbf{y}-\mathbf{X}\mathbf{w})
+\right).
+\]
+
+Thus the log-likelihood is
+\[
+\log p(\mathbf{y}\mid\mathbf{X},\mathbf{w})
+= -\frac{N}{2}\log(2\pi)
+  -\frac{N}{2}\log(\sigma^{2})
+  -\frac{1}{2\sigma^{2}}
+    (\mathbf{y}-\mathbf{X}\mathbf{w})^{\top}(\mathbf{y}-\mathbf{X}\mathbf{w}).
+\]
+
+Equivalently,
+\[
+\log p(\mathbf{y}\mid\mathbf{X},\mathbf{w})
+= -\frac{N}{2}\log(2\pi\sigma^{2})
+  -\frac{1}{2\sigma^{2}}\sum_{i=1}^{N}(y_i - \mathbf{x}_i^{\top}\mathbf{w})^2 .
+\]
+
+% ------------------------------------------------------------
+\subsection{Log-Prior $\,\log p(\mathbf{w})$}
+
+Assume a zero-mean Gaussian prior
+\[
+p(\mathbf{w}) = \mathcal{N}\!\left(\mathbf{w} \mid 0,\ \alpha^{-1}\mathbf{I}_D\right).
+\]
+
+The density is
+\[
+p(\mathbf{w})
+= \left(\frac{\alpha}{2\pi}\right)^{D/2}
+  \exp\!\left( -\frac{\alpha}{2}\,\mathbf{w}^{\top}\mathbf{w} \right).
+\]
+
+Therefore the log-prior is
+\[
+\log p(\mathbf{w})
+= \frac{D}{2}\log(\alpha)
+  -\frac{D}{2}\log(2\pi)
+  -\frac{\alpha}{2}\mathbf{w}^{\top}\mathbf{w}.
+\]
+
+% ------------------------------------------------------------
+\subsection{MAP Estimation (Posterior Mode)}
+The posterior satisfies
+\[
+p(\mathbf{w}\mid\mathbf{y},\mathbf{X})
+\propto p(\mathbf{y}\mid\mathbf{X},\mathbf{w})\, p(\mathbf{w}).
+\]
+
+Hence,
+\[
+\log p(\mathbf{w}\mid\mathbf{y},\mathbf{X})
+= \log p(\mathbf{y}\mid\mathbf{X},\mathbf{w})
+  + \log p(\mathbf{w}) + \text{const}.
+\]
+
+Ignoring constants w.r.t.\ $\mathbf{w}$,
+\[
+\log p(\mathbf{w}\mid\mathbf{y},\mathbf{X})
+= -\frac{1}{2\sigma^{2}}
+   (\mathbf{y}-\mathbf{X}\mathbf{w})^{\top}(\mathbf{y}-\mathbf{X}\mathbf{w})
+  -\frac{\alpha}{2}\mathbf{w}^{\top}\mathbf{w}
+  + \text{const}.
+\]
+
+Maximizing the posterior is equivalent to minimizing
+\[
+(\mathbf{y}-\mathbf{X}\mathbf{w})^{\top}(\mathbf{y}-\mathbf{X}\mathbf{w})
+\;+\;
+(\alpha\sigma^{2})\,\mathbf{w}^{\top}\mathbf{w}.
+\]
+
+Letting $\lambda=\alpha\sigma^{2}$, the MAP solution is the ridge-regression estimator
+\[
+\mathbf{w}_{\text{MAP}}
+= \arg\min_{\mathbf{w}}
+\Big[
+\|\mathbf{y}-\mathbf{X}\mathbf{w}\|^{2}
++ \lambda\|\mathbf{w}\|^{2}
+\Big].
+\]
+% ============================================================
+% ============================================================
+\section*{LASSO (L1) as a MAP Estimate}
+
+We show that a Laplace prior on the weights leads to L1 regularization (LASSO).
+
+\subsection*{1. The Laplace Prior Distribution}
+Assume a Laplace prior on the weights $\mathbf{w}$, which encourages sparsity (many weights at zero). We assume each weight $w_j$ is drawn independently:
+\[
+p(w_j) = \text{Laplace}(w_j \mid 0, b) = \frac{1}{2b} \exp \left( -\frac{|w_j|}{b} \right)
+\]
+The full prior for the $D$-dimensional vector $\mathbf{w}$ is the product:
+\[
+p(\mathbf{w}) = \prod_{j=1}^{D} p(w_j) = \left( \frac{1}{2b} \right)^D \exp \left( -\frac{1}{b} \sum_{j=1}^{D} |w_j| \right)
+\]
+This can be written using the L1-norm, $\|\mathbf{w}\|_1 = \sum_{j=1}^D |w_j|$:
+\[
+p(\mathbf{w}) = \left( \frac{1}{2b} \right)^D \exp \left( -\frac{1}{b} \|\mathbf{w}\|_1 \right)
+\]
+
+\subsection*{2. The Log-Prior}
+Taking the natural logarithm to get the log-prior:
+\begin{align*}
+\log p(\mathbf{w}) &= \log \left[ \left( \frac{1}{2b} \right)^D \exp \left( -\frac{1}{b} \|\mathbf{w}\|_1 \right) \right] \\
+&= D \log \left( \frac{1}{2b} \right) - \frac{1}{b} \|\mathbf{w}\|_1 \\
+&= \text{const} - \frac{1}{b} \|\mathbf{w}\|_1
+\end{align*}
+
+\subsection*{3. MAP Estimation}
+The MAP estimate maximizes the log-posterior, which is the sum of the log-likelihood and the log-prior:
+\[
+\log p(\mathbf{w}\mid\mathbf{y},\mathbf{X}) = \log p(\mathbf{y}\mid\mathbf{X},\mathbf{w}) + \log p(\mathbf{w}) + \text{const}
+\]
+Substituting the Gaussian log-likelihood (from Section 7) [cite: 108] and the Laplace log-prior, ignoring all terms that are constant w.r.t. $\mathbf{w}$:
+\[
+\log p(\mathbf{w}\mid\mathbf{y},\mathbf{X}) \propto -\frac{1}{2\sigma^{2}} (\mathbf{y}-\mathbf{X}\mathbf{w})^{\top}(\mathbf{y}-\mathbf{X}\mathbf{w}) - \frac{1}{b} \|\mathbf{w}\|_1
+\]
+Maximizing this is equivalent to minimizing its negative. Using your defined $`\argmin`$ command:
+\[
+\mathbf{w}_{\text{MAP}} = \argmin_{\mathbf{w}} \left[ \frac{1}{2\sigma^{2}} \|\mathbf{y}-\mathbf{X}\mathbf{w}\|^2 + \frac{1}{b} \|\mathbf{w}\|_1 \right]
+\]
+Multiplying by the constant $2\sigma^2$ and defining $\lambda = \frac{2\sigma^2}{b}$ gives the familiar LASSO objective function:
+\[
+\boxed{\,\mathbf{w}_{\text{MAP}} = \argmin_{\mathbf{w}} \left[ \|\mathbf{y}-\mathbf{X}\mathbf{w}\|^2 + \lambda \|\mathbf{w}\|_1 \right]\,}
+\]
+% ============================================================
+% ============================================================
+% ============================================================
+\section*{Generalized Least Squares (GLS)}
+
+\subsection*{1. The OLS Assumption vs. The GLS Model}
+The OLS estimator $\hat{w}_{\mathrm{OLS}}$ is the BLUE (Best Linear Unbiased Estimator) under the Gauss-Markov assumptions, which critically require that the error covariance matrix is \emph{spherical}:
+\[
+\mathrm{Cov}(\varepsilon) = \sigma^2 I_N
+\]
+This single assumption implies two conditions:
+\begin{itemize}
+    \item \textbf{Homoscedasticity:} All errors have the same variance $\sigma^2$.
+    \item \textbf{No Autocorrelation:} All errors are uncorrelated.
+\end{itemize}
+In the \textbf{Generalized Least Squares (GLS)} model, we relax this assumption. We assume the errors are still zero-mean but have a general, known, $N \times N$ positive-definite covariance matrix $\mathbf{\Sigma}$:
+\[
+\mathbb{E}[\varepsilon] = 0, \qquad \mathrm{Cov}(\varepsilon) = \mathbf{\Sigma}
+\]
+When $\mathbf{\Sigma} \neq \sigma^2 I_N$, the OLS estimator $\hat{w}_{\mathrm{OLS}}$ is still \emph{unbiased}, but it is no longer BLUE (i.e., it is not the minimum-variance estimator).
+
+\subsection*{2. Derivation via Data Whitening}
+The core idea of GLS is to transform the generalized model back into a "standard" model that satisfies the OLS assumptions. This is done via \emph{whitening}.
+
+Since $\mathbf{\Sigma}$ is positive-definite, we can find a non-singular $N \times N$ matrix $\mathbf{C}$ such that $\mathbf{\Sigma} = \mathbf{C}\mathbf{C}^\top$ (e.g., via Cholesky decomposition). The inverse $\mathbf{C}^{-1}$ is our "whitening" matrix.
+
+Start with the original model:
+\[
+t = \Phi w + \varepsilon
+\]
+Pre-multiply by $\mathbf{C}^{-1}$:
+\[
+(\mathbf{C}^{-1} t) = (\mathbf{C}^{-1} \Phi) w + (\mathbf{C}^{-1} \varepsilon)
+\]
+Let's define our transformed variables:
+\[
+\tilde{t} = \mathbf{C}^{-1} t, \qquad \tilde{\Phi} = \mathbf{C}^{-1} \Phi, \qquad \tilde{\varepsilon} = \mathbf{C}^{-1} \varepsilon
+\]
+Our new, transformed model is:
+\[
+\tilde{t} = \tilde{\Phi} w + \tilde{\varepsilon}
+\]
+Now, let's find the covariance of the \emph{new} error term $\tilde{\varepsilon}$:
+\begin{align*}
+\mathrm{Cov}(\tilde{\varepsilon}) &= \mathrm{Cov}(\mathbf{C}^{-1} \varepsilon) \\
+&= \mathbf{C}^{-1} \mathrm{Cov}(\varepsilon) (\mathbf{C}^{-1})^\top \\
+&= \mathbf{C}^{-1} \mathbf{\Sigma} (\mathbf{C}^\top)^{-1} \\
+&= \mathbf{C}^{-1} (\mathbf{C}\mathbf{C}^\top) (\mathbf{C}^\top)^{-1} \\
+&= (\mathbf{C}^{-1}\mathbf{C}) (\mathbf{C}^\top (\mathbf{C}^\top)^{-1}) = I_N \cdot I_N = I_N
+\end{align*}
+The transformed model $\tilde{t} = \tilde{\Phi} w + \tilde{\varepsilon}$ has spherical errors ($\sigma^2=1$). It satisfies the Gauss-Markov assumptions!
+
+\subsection*{3. The GLS (Aitken) Estimator}
+We can find the BLUE for $w$ by simply applying the OLS formula to our \emph{transformed} data:
+\[
+\hat{w}_{\mathrm{GLS}} = (\tilde{\Phi}^\top \tilde{\Phi})^{-1} \tilde{\Phi}^\top \tilde{t}
+\]
+Now, substitute the original variables back in.
+\begin{itemize}
+    \item $\tilde{\Phi}^\top \tilde{\Phi} = (\mathbf{C}^{-1} \Phi)^\top (\mathbf{C}^{-1} \Phi) = \Phi^\top (\mathbf{C}^{-1})^\top \mathbf{C}^{-1} \Phi = \Phi^\top (\mathbf{C}\mathbf{C}^\top)^{-1} \Phi = \Phi^\top \mathbf{\Sigma}^{-1} \Phi$
+    \item $\tilde{\Phi}^\top \tilde{t} = (\mathbf{C}^{-1} \Phi)^\top (\mathbf{C}^{-1} t) = \Phi^\top (\mathbf{C}^{-1})^\top \mathbf{C}^{-1} t = \Phi^\top \mathbf{\Sigma}^{-1} t$
+\end{itemize}
+Substituting these gives the \textbf{GLS estimator}:
+\[
+\boxed{\,\hat{w}_{\mathrm{GLS}} = (\Phi^\top \mathbf{\Sigma}^{-1} \Phi)^{-1} \Phi^\top \mathbf{\Sigma}^{-1} t\,}
+\]
+This is also called the \textbf{Aitken estimator}.
+
+\subsection*{4. Properties of the GLS Estimator}
+
+\begin{theorem}[Aitken Theorem]
+Under the generalized model $t = \Phi w + \varepsilon$ with $\mathrm{Cov}(\varepsilon) = \mathbf{\Sigma}$:
+\begin{enumerate}[label=(\roman*)]
+    \item \textbf{Unbiasedness:} The GLS estimator is unbiased.
+    \[
+    \mathbb{E}[\hat{w}_{\mathrm{GLS}}] = w
+    \]
+    \item \textbf{Covariance:} The covariance matrix of $\hat{w}_{\mathrm{GLS}}$ is:
+    \[
+    \boxed{\,\mathrm{Cov}(\hat{w}_{\mathrm{GLS}}) = (\Phi^\top \mathbf{\Sigma}^{-1} \Phi)^{-1}\,}
+    \]
+    \item \textbf{Efficiency:} $\hat{w}_{\mathrm{GLS}}$ is the \textbf{BLUE} (Best Linear Unbiased Estimator). Any other linear unbiased estimator $\tilde{w}$ will have a larger covariance.
+\end{enumerate}
+\end{theorem}
+
+\subsection*{5. OLS as a Special Case of GLS}
+If the OLS assumptions were correct, $\mathbf{\Sigma} = \sigma^2 I_N$. Let's plug this into the GLS formula:
+\begin{align*}
+\hat{w}_{\mathrm{GLS}} &= (\Phi^\top (\sigma^2 I_N)^{-1} \Phi)^{-1} \Phi^\top (\sigma^2 I_N)^{-1} t \\
+&= (\Phi^\top (\tfrac{1}{\sigma^2}) \Phi)^{-1} \Phi^\top (\tfrac{1}{\sigma^2}) t \\
+&= \big( \tfrac{1}{\sigma^2} (\Phi^\top \Phi) \big)^{-1} \big( \tfrac{1}{\sigma^2} \Phi^\top t \big) \\
+&= \big( \sigma^2 (\Phi^\top \Phi)^{-1} \big) \big( \tfrac{1}{\sigma^2} \Phi^\top t \big) \\
+&= (\Phi^\top \Phi)^{-1} \Phi^\top t = \hat{w}_{\mathrm{OLS}}
+\end{align*}
+This confirms that OLS is just a special case of GLS where the error covariance is spherical.
+
+\begin{note}
+\textbf{Feasible GLS (FGLS):} In practice, the exact covariance $\mathbf{\Sigma}$ is almost never known. \textbf{FGLS} is the practical approach where $\mathbf{\Sigma}$ is \emph{estimated} from the data (often using the residuals from an initial OLS fit). The $\hat{\mathbf{\Sigma}}$ is then plugged into the GLS formula.
+\end{note}
+
+% ============================================================
+\subsection*{Derivation of GLS as an MLE}
+
+The GLS estimator is the MLE for a linear model where the noise is drawn from a single multivariate Gaussian distribution, allowing for both heteroscedasticity and autocorrelation.
+
+\paragraph{1. Probabilistic Model \& Error Function}
+Assume the linear model in vector form:
+\[
+\mathbf{t} = \mathbf{\Phi}\mathbf{w} + \boldsymbol{\epsilon}
+\]
+where the entire $N \times 1$ noise vector $\boldsymbol{\epsilon}$ is drawn from a zero-mean multivariate Gaussian with a general $N \times N$ positive-definite covariance matrix $\mathbf{\Sigma}$:
+\[
+\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{\Sigma})
+\]
+This implies the likelihood for the entire target vector $\mathbf{t}$ is:
+\[
+p(\mathbf{t} \mid \mathbf{\Phi}, \mathbf{w}, \mathbf{\Sigma}) = \mathcal{N}(\mathbf{t} \mid \mathbf{\Phi}\mathbf{w}, \mathbf{\Sigma})
+\]
+The probability density function (PDF) is:
+\[
+p(\mathbf{t} \mid \dots) = \frac{1}{(2\pi)^{N/2} |\mathbf{\Sigma}|^{1/2}} \exp\!\left( -\frac{1}{2}(\mathbf{t} - \mathbf{\Phi}\mathbf{w})^\top \mathbf{\Sigma}^{-1} (\mathbf{t} - \mathbf{\Phi}\mathbf{w}) \right)
+\]
+The log-likelihood $\mathcal{L}(\mathbf{w})$ is:
+\[
+\mathcal{L}(\mathbf{w}) = \log p(\mathbf{t} \mid \dots)
+= C - \frac{1}{2}(\mathbf{t} - \mathbf{\Phi}\mathbf{w})^\top \mathbf{\Sigma}^{-1} (\mathbf{t} - \mathbf{\Phi}\mathbf{w})
+\]
+where $C = -\frac{N}{2}\log(2\pi) - \frac{1}{2}\log|\mathbf{\Sigma}|$ is a constant with respect to $\mathbf{w}$.
+
+To find the MLE, we maximize $\mathcal{L}(\mathbf{w})$, which is equivalent to minimizing the negative of the $\mathbf{w}$-dependent part. This gives the GLS error function $E(\mathbf{w})$:
+\[
+E(\mathbf{w}) = (\mathbf{t} - \mathbf{\Phi}\mathbf{w})^\top \mathbf{\Sigma}^{-1} (\mathbf{t} - \mathbf{\Phi}\mathbf{w})
+\]
+This quadratic form is the (generalized) squared Mahalanobis distance.
+
+\paragraph{2. Derivation of the Closed-Form Solution}
+The error function $E(\mathbf{w})$ is already in its matrix form. To find the minimum, we expand the expression. Let $\mathbf{\Omega} = \mathbf{\Sigma}^{-1}$ for simplicity.
+\[
+E(\mathbf{w}) = (\mathbf{t}^\top - \mathbf{w}^\top\mathbf{\Phi}^\top) \mathbf{\Omega} (\mathbf{t} - \mathbf{\Phi}\mathbf{w})
+\]
+\[
+E(\mathbf{w}) = \mathbf{t}^\top\mathbf{\Omega}\mathbf{t} - \mathbf{t}^\top\mathbf{\Omega}\mathbf{\Phi}\mathbf{w} - \mathbf{w}^\top\mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{t} + \mathbf{w}^\top\mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{\Phi}\mathbf{w}
+\]
+Since $\mathbf{\Sigma}$ is symmetric, its inverse $\mathbf{\Omega}$ is also symmetric ($\mathbf{\Omega}^\top = \mathbf{\Omega}$). The middle terms are transposes of each other:
+\[
+E(\mathbf{w}) = \mathbf{t}^\top\mathbf{\Omega}\mathbf{t} - 2\mathbf{w}^\top\mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{t} + \mathbf{w}^\top(\mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{\Phi})\mathbf{w}
+\]
+Now, we take the gradient with respect to $\mathbf{w}$:
+\[
+\nabla_{\mathbf{w}} E(\mathbf{w}) = - 2\mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{t} + 2(\mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{\Phi})\mathbf{w}
+\]
+Set the gradient to zero to find the minimum:
+\[
+\mathbf{0} = - 2\mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{t} + 2(\mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{\Phi})\mathbf{w}
+\]
+\[
+(\mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{\Phi})\mathbf{w} = \mathbf{\Phi}^\top\mathbf{\Omega}\mathbf{t}
+\]
+Substituting back $\mathbf{\Omega} = \mathbf{\Sigma}^{-1}$, we get the \textbf{GLS Normal Equations}:
+\[
+(\mathbf{\Phi}^\top\mathbf{\Sigma}^{-1}\mathbf{\Phi})\mathbf{w} = \mathbf{\Phi}^\top\mathbf{\Sigma}^{-1}\mathbf{t}
+\]
+Assuming $(\mathbf{\Phi}^\top\mathbf{\Sigma}^{-1}\mathbf{\Phi})$ is invertible, we solve for $\mathbf{w}$ to get the GLS solution:
+\[
+\boxed{\,\hat{\mathbf{w}}_{\mathrm{GLS}} = (\mathbf{\Phi}^\top \mathbf{\Sigma}^{-1} \mathbf{\Phi})^{-1} \mathbf{\Phi}^\top \mathbf{\Sigma}^{-1} \mathbf{t}\,}
+\]
+% ============================================================
+
+% ============================================================
+% ============================================================
+% ============================================================
+\section*{Weighted Least Squares (WLS)}
+WLS is a special case of GLS used when errors are heteroscedastic but uncorrelated.
+
+\subsection*{1. The WLS Model and Objective}
+We assume the general linear model $t = \Phi w + \varepsilon$, where $\mathbb{E}[\varepsilon]=0$ but the errors are heteroscedastic:
+\[
+\mathrm{Cov}(\varepsilon) = \mathbf{\Sigma} =
+\begin{pmatrix}
+\sigma_1^2 & 0 & \dots & 0 \\
+0 & \sigma_2^2 & \dots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \dots & \sigma_N^2
+\end{pmatrix}
+\]
+The WLS objective is to minimize the \textbf{Weighted Sum of Squared Residuals (WSSR)}, where each squared residual is weighted by the inverse of its variance, $w_i = 1/\sigma_i^2$.
+\[
+E(w) = \sum_{i=1}^N w_i (t_i - \phi_i^\top w)^2
+\]
+In matrix form, we define the diagonal weight matrix $\mathbf{W} = \mathbf{\Sigma}^{-1}$:
+\[
+\mathbf{W} = \mathrm{diag}(w_1, \dots, w_N) = \mathrm{diag}(1/\sigma_1^2, \dots, 1/\sigma_N^2)
+\]
+The objective function becomes:
+\[
+E(w) = (t - \Phi w)^\top \mathbf{W} (t - \Phi w)
+\]
+
+\subsection*{2. Derivation of the WLS Estimator}
+We find the estimator $\hat{w}_{\mathrm{WLS}}$ by minimizing $E(w)$. First, expand the objective:
+\[
+E(w) = t^\top\mathbf{W}t - t^\top\mathbf{W}\Phi w - w^\top\Phi^\top\mathbf{W}t + w^\top\Phi^\top\mathbf{W}\Phi w
+\]
+Since $w^\top\Phi^\top\mathbf{W}t$ is a scalar, it equals its transpose $t^\top\mathbf{W}\Phi w$.
+\[
+E(w) = t^\top\mathbf{W}t - 2 t^\top\mathbf{W}\Phi w + w^\top\Phi^\top\mathbf{W}\Phi w
+\]
+Now, take the gradient with respect to $w$ and set to zero:
+\[
+\nabla_w E(w) = -2 \Phi^\top\mathbf{W}t + 2 \Phi^\top\mathbf{W}\Phi w
+\]
+\[
+\nabla_w E(w) = 0 \quad\Rightarrow\quad 2 \Phi^\top\mathbf{W}\Phi w = 2 \Phi^\top\mathbf{W}t
+\]
+This gives the \textbf{WLS Normal Equations}:
+\[
+(\Phi^\top\mathbf{W}\Phi) w = \Phi^\top\mathbf{W}t
+\]
+Assuming $\Phi^\top\mathbf{W}\Phi$ is invertible, the WLS estimator is:
+\[
+\boxed{\,\hat{w}_{\mathrm{WLS}} = (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W}t\,}
+\]
+This is identical to the GLS estimator where $\mathbf{\Sigma}^{-1} = \mathbf{W}$.
+
+\subsection*{3. Derivation via Data Whitening}
+We can also derive WLS by transforming the data so that the new error terms are homoscedastic with variance 1, and then applying OLS.
+Let $\mathbf{W}^{1/2}$ be the diagonal matrix with entries $\sqrt{w_i} = 1/\sigma_i$.
+\[
+\mathbf{W}^{1/2} = \mathrm{diag}(1/\sigma_1, \dots, 1/\sigma_N)
+\]
+Pre-multiply the original model $t = \Phi w + \varepsilon$ by $\mathbf{W}^{1/2}$:
+\[
+(\mathbf{W}^{1/2} t) = (\mathbf{W}^{1/2} \Phi) w + (\mathbf{W}^{1/2} \varepsilon)
+\]
+Define the transformed variables:
+\[
+\tilde{t} = \mathbf{W}^{1/2} t, \qquad \tilde{\Phi} = \mathbf{W}^{1/2} \Phi, \qquad \tilde{\varepsilon} = \mathbf{W}^{1/2} \varepsilon
+\]
+The new model is $\tilde{t} = \tilde{\Phi} w + \tilde{\varepsilon}$. Let's check the covariance of the new error $\tilde{\varepsilon}$:
+\begin{align*}
+\mathrm{Cov}(\tilde{\varepsilon}) &= \mathrm{Cov}(\mathbf{W}^{1/2} \varepsilon) \\
+&= \mathbf{W}^{1/2} \mathrm{Cov}(\varepsilon) (\mathbf{W}^{1/2})^\top \\
+&= \mathbf{W}^{1/2} \mathbf{\Sigma} \mathbf{W}^{1/2} \quad (\text{since } \mathbf{W} \text{ is diagonal}) \\
+&= \mathbf{W}^{1/2} \mathbf{W}^{-1} \mathbf{W}^{1/2} \\
+&= (\mathbf{W}^{1/2} \mathbf{W}^{-1/2}) (\mathbf{W}^{-1/2} \mathbf{W}^{1/2}) = I \cdot I = I
+\end{align*}
+The transformed model has spherical errors, so we apply the OLS formula to it:
+\[
+\hat{w} = (\tilde{\Phi}^\top \tilde{\Phi})^{-1} \tilde{\Phi}^\top \tilde{t}
+\]
+Substitute the original variables back:
+\begin{itemize}
+    \item $\tilde{\Phi}^\top \tilde{\Phi} = (\mathbf{W}^{1/2} \Phi)^\top (\mathbf{W}^{1/2} \Phi) = \Phi^\top (\mathbf{W}^{1/2})^\top \mathbf{W}^{1/2} \Phi = \Phi^\top \mathbf{W} \Phi$
+    \item $\tilde{\Phi}^\top \tilde{t} = (\mathbf{W}^{1/2} \Phi)^\top (\mathbf{W}^{1/2} t) = \Phi^\top (\mathbf{W}^{1/2})^\top \mathbf{W}^{1/2} t = \Phi^\top \mathbf{W} t$
+\end{itemize}
+This yields the identical WLS estimator:
+\[
+\hat{w}_{\mathrm{WLS}} = (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W}t
+\]
+
+\subsection*{4. Properties of the WLS Estimator}
+We assume the weights $\mathbf{W} = \mathbf{\Sigma}^{-1}$ are known.
+
+\begin{theorem}[Unbiasedness of WLS]
+The WLS estimator is unbiased.
+\end{theorem}
+\begin{proof}
+Substitute $t = \Phi w + \varepsilon$ into the estimator:
+\begin{align*}
+\hat{w}_{\mathrm{WLS}} &= (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W} (\Phi w + \varepsilon) \\
+&= (\Phi^\top\mathbf{W}\Phi)^{-1} (\Phi^\top\mathbf{W}\Phi) w + (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W} \varepsilon \\
+&= w + (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W} \varepsilon
+\end{align*}
+Now take the expectation:
+\begin{align*}
+\mathbb{E}[\hat{w}_{\mathrm{WLS}}] &= \mathbb{E}[w] + \mathbb{E}[(\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W} \varepsilon] \\
+&= w + (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W} \mathbb{E}[\varepsilon] \\
+&= w + 0 = w
+\end{align*}
+\end{proof}
+
+\begin{theorem}[Covariance of WLS]
+The covariance matrix of the WLS estimator is $\mathrm{Cov}(\hat{w}_{\mathrm{WLS}}) = (\Phi^\top\mathbf{W}\Phi)^{-1}$.
+\end{theorem}
+\begin{proof}
+Using the result from the unbiasedness proof:
+\[
+\hat{w}_{\mathrm{WLS}} - w = (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W} \varepsilon
+\]
+Let $A = (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W}$. The covariance is:
+\begin{align*}
+\mathrm{Cov}(\hat{w}_{\mathrm{WLS}}) &= \mathbb{E}[(\hat{w}_{\mathrm{WLS}} - w)(\hat{w}_{\mathrm{WLS}} - w)^\top] \\
+&= \mathbb{E}[(A\varepsilon)(A\varepsilon)^\top] = \mathbb{E}[A \varepsilon \varepsilon^\top A^\top] \\
+&= A\, \mathbb{E}[\varepsilon \varepsilon^\top]\, A^\top = A\, \mathbf{\Sigma}\, A^\top \\
+&= \big[ (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W} \big] \cdot \mathbf{\Sigma} \cdot \big[ (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W} \big]^\top
+\end{align*}
+Since $\mathbf{\Sigma} = \mathbf{W}^{-1}$ and $\mathbf{W}^\top = \mathbf{W}$ (it's diagonal):
+\begin{align*}
+\mathrm{Cov}(\hat{w}_{\mathrm{WLS}}) &= \big[ (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top\mathbf{W} \big] \mathbf{W}^{-1} \big[ \mathbf{W} \Phi (\Phi^\top\mathbf{W}\Phi)^{-1} \big] \\
+&= (\Phi^\top\mathbf{W}\Phi)^{-1} \Phi^\top (\mathbf{W} \mathbf{W}^{-1}) \mathbf{W} \Phi (\Phi^\top\mathbf{W}\Phi)^{-1} \\
+&= (\Phi^\top\mathbf{W}\Phi)^{-1} (\Phi^\top \mathbf{W} \Phi) (\Phi^\top\mathbf{W}\Phi)^{-1} \\
+&= I \cdot (\Phi^\top\mathbf{W}\Phi)^{-1} \\
+&= \boxed{\,(\Phi^\top\mathbf{W}\Phi)^{-1}\,}
+\end{align*}
+\end{proof}
+By the Aitken Theorem, $\hat{w}_{\mathrm{WLS}}$ is the BLUE for this model.
+
+\subsection*{5. Feasible WLS (FWLS)}
+In practice, the true variances $\sigma_i^2$ (and thus $\mathbf{W}$) are unknown. \textbf{Feasible WLS} is a multi-step process to estimate them:
+\begin{enumerate}
+    \item Run OLS on $t = \Phi w + \varepsilon$ to get residuals $e = t - \Phi \hat{w}_{\mathrm{OLS}}$.
+    \item Model the variance. Assume $\sigma_i^2$ is a function of some variables $z_i$ (often $z_i = \phi_i$). To ensure positivity, model $\log(e_i^2)$:
+    \[
+    \log(e_i^2) = z_i^\top \gamma + \nu_i
+    \]
+    \item Use this model to predict the log-variances, then get predicted variances:
+    \[
+    \hat{\sigma}_i^2 = \exp(z_i^\top \hat{\gamma})
+    \]
+    \item Construct the estimated weight matrix: $\hat{\mathbf{W}} = \mathrm{diag}(1/\hat{\sigma}_1^2, \dots, 1/\hat{\sigma}_N^2)$.
+    \item Run WLS using $\hat{\mathbf{W}}$:
+    \[
+    \hat{w}_{\mathrm{FWLS}} = (\Phi^\top\hat{\mathbf{W}}\Phi)^{-1} \Phi^\top\hat{\mathbf{W}}t
+    \]
+\end{enumerate}
+This estimator is consistent and asymptotically more efficient than OLS.
+% ============================================================
+\subsection*{Derivation of WLS as an MLE}
+
+We can derive the WLS estimator by finding the Maximum Likelihood Estimate (MLE) for a linear model with independent, heteroscedastic Gaussian noise.
+
+\paragraph{1. Probabilistic Model \& Error Function}
+Assume the linear model $t_i = \phi_i^\top \mathbf{w} + \epsilon_i$, where the noise $\epsilon_i$ for each observation is drawn from a Gaussian with its own variance $\sigma_i^2$:
+\[
+\epsilon_i \sim \mathcal{N}(0, \sigma_i^2)
+\]
+The likelihood for a single observation $t_i$ is:
+\[
+p(t_i \mid \phi_i, \mathbf{w}, \sigma_i^2) = \mathcal{N}(t_i \mid \phi_i^\top \mathbf{w}, \sigma_i^2)
+= \frac{1}{\sqrt{2\pi\sigma_i^2}} \exp\!\left( -\frac{(t_i - \phi_i^\top \mathbf{w})^2}{2\sigma_i^2} \right)
+\]
+The log-likelihood for the entire dataset (assuming independence) is the sum:
+\[
+\mathcal{L}(\mathbf{w}) = \log \prod_{i=1}^{N} p(t_i) = \sum_{i=1}^{N} \log p(t_i)
+\]
+\[
+\mathcal{L}(\mathbf{w}) = \sum_{i=1}^{N} \left[ \log\left(\frac{1}{\sqrt{2\pi\sigma_i^2}}\right) - \frac{1}{2\sigma_i^2}(t_i - \phi_i^\top \mathbf{w})^2 \right]
+\]
+To find the MLE for $\mathbf{w}$, we maximize $\mathcal{L}(\mathbf{w})$. The first term in the sum is constant w.r.t.\ $\mathbf{w}$, so maximizing the log-likelihood is equivalent to minimizing the negative of the second term:
+\[
+\hat{\mathbf{w}}_{\mathrm{MLE}} = \operatorname*{arg\,min}_{\mathbf{w}} \sum_{i=1}^{N} \frac{1}{2\sigma_i^2}(t_i - \phi_i^\top \mathbf{w})^2
+\]
+Dropping the constant $1/2$ and defining the \textbf{weights} as $w_i = 1/\sigma_i^2$, we get the WLS error function $E(\mathbf{w})$:
+\[
+E(\mathbf{w}) = \sum_{i=1}^{N} w_i (t_i - \phi_i^\top \mathbf{w})^2
+\]
+
+\paragraph{2. Error Function in Matrix Form}
+Let $\mathbf{t}$ be the $N \times 1$ target vector, $\mathbf{\Phi}$ the $N \times D$ design matrix, and $\mathbf{W}$ the $N \times N$ diagonal matrix of weights:
+\[
+\mathbf{W} = \mathrm{diag}(w_1, w_2, \dots, w_N)
+\]
+The error function $E(\mathbf{w})$ in matrix form is the quadratic form:
+\[
+E(\mathbf{w}) = (\mathbf{t} - \mathbf{\Phi}\mathbf{w})^\top \mathbf{W} (\mathbf{t} - \mathbf{\Phi}\mathbf{w})
+\]
+
+\paragraph{3. Derivation of the Closed-Form Solution}
+To find the $\mathbf{w}$ that minimizes $E(\mathbf{w})$, we expand the expression and compute the gradient.
+\[
+E(\mathbf{w}) = (\mathbf{t}^\top - \mathbf{w}^\top\mathbf{\Phi}^\top) \mathbf{W} (\mathbf{t} - \mathbf{\Phi}\mathbf{w})
+\]
+\[
+E(\mathbf{w}) = \mathbf{t}^\top\mathbf{W}\mathbf{t} - \mathbf{t}^\top\mathbf{W}\mathbf{\Phi}\mathbf{w} - \mathbf{w}^\top\mathbf{\Phi}^\top\mathbf{W}\mathbf{t} + \mathbf{w}^\top\mathbf{\Phi}^\top\mathbf{W}\mathbf{\Phi}\mathbf{w}
+\]
+Since $\mathbf{W}$ is symmetric ($\mathbf{W}^\top = \mathbf{W}$), the two middle terms are transposes of each other (and are scalars), so we can combine them:
+\[
+E(\mathbf{w}) = \mathbf{t}^\top\mathbf{W}\mathbf{t} - 2\mathbf{w}^\top\mathbf{\Phi}^\top\mathbf{W}\mathbf{t} + \mathbf{w}^\top(\mathbf{\Phi}^\top\mathbf{W}\mathbf{\Phi})\mathbf{w}
+\]
+Now, we take the gradient with respect to $\mathbf{w}$:
+\[
+\nabla_{\mathbf{w}} E(\mathbf{w}) = - 2\mathbf{\Phi}^\top\mathbf{W}\mathbf{t} + 2(\mathbf{\Phi}^\top\mathbf{W}\mathbf{\Phi})\mathbf{w}
+\]
+Set the gradient to zero to find the minimum:
+\[
+\mathbf{0} = - 2\mathbf{\Phi}^\top\mathbf{W}\mathbf{t} + 2(\mathbf{\Phi}^\top\mathbf{W}\mathbf{\Phi})\mathbf{w}
+\]
+\[
+(\mathbf{\Phi}^\top\mathbf{W}\mathbf{\Phi})\mathbf{w} = \mathbf{\Phi}^\top\mathbf{W}\mathbf{t}
+\]
+Assuming the matrix $(\mathbf{\Phi}^\top\mathbf{W}\mathbf{\Phi})$ is invertible, we solve for $\mathbf{w}$ to get the WLS solution:
+\[
+\boxed{\,\hat{\mathbf{w}}_{\mathrm{WLS}} = (\mathbf{\Phi}^\top \mathbf{W} \mathbf{\Phi})^{-1} \mathbf{\Phi}^\top \mathbf{W} \mathbf{t}\,}
+\]
+% ============================================================
+% ============================================================
+ % ============================================================
+% ============================================================
+\section*{Effects of Data Transformations on OLS Solution}
+
+We analyze the effect of common data operations on the OLS closed-form solution $\hat{\mathbf{w}} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}$.
+
+\subsection*{Scaling Individual Features}
+\begin{itemize}
+    \item \textbf{Operation:} Scale a single feature column $j$ (assuming $j \ge 1$, not the bias) by a constant $c$.
+    \item \textbf{Proof:} Let $\mathbf{C}$ be a diagonal matrix with $\mathbf{C}_{jj} = c$ and all other diagonal entries as 1. The new design matrix is $\mathbf{X}' = \mathbf{X}\mathbf{C}$.
+    \begin{align*}
+    \hat{\mathbf{w}}' &= ((\mathbf{X}\mathbf{C})^T (\mathbf{X}\mathbf{C}))^{-1} (\mathbf{X}\mathbf{C})^T \mathbf{y} \\
+    &= (\mathbf{C}^T \mathbf{X}^T \mathbf{X} \mathbf{C})^{-1} \mathbf{C}^T \mathbf{X}^T \mathbf{y} \\
+    &= \mathbf{C}^{-1} (\mathbf{X}^T \mathbf{X})^{-1} (\mathbf{C}^T)^{-1} \mathbf{C}^T \mathbf{X}^T \mathbf{y} \\
+    &= \mathbf{C}^{-1} (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y} = \mathbf{C}^{-1} \hat{\mathbf{w}}
+    \end{align*}
+    \item \textbf{Effect:} The new weight vector is $\hat{\mathbf{w}}' = \mathbf{C}^{-1} \hat{\mathbf{w}}$. Since $\mathbf{C}^{-1}$ is a diagonal matrix with $(\mathbf{C}^{-1})_{jj} = 1/c$, the corresponding weight $\hat{w}_j$ is scaled by $1/c$ ($\hat{w}_j' = \hat{w}_j / c$). All other weights, including the bias term $\hat{w}_0$, are unchanged.
+\end{itemize}
+
+\subsection*{Scaling All Features (not bias)}
+\begin{itemize}
+    \item \textbf{Operation:} Scale all feature columns $\mathbf{x}_j$ (for $j \ge 1$) by a constant $c$.
+    \item \textbf{Proof:} This is the same as above, but $\mathbf{C} = \mathrm{diag}(1, c, c, \dots, c)$. The inverse is $\mathbf{C}^{-1} = \mathrm{diag}(1, 1/c, 1/c, \dots, 1/c)$. The proof $\hat{\mathbf{w}}' = \mathbf{C}^{-1} \hat{\mathbf{w}}$ is identical.
+    \item \textbf{Effect:} The bias (intercept) term $\hat{w}_0$ is unchanged. All other feature weights $\hat{w}_j$ (for $j \ge 1$) are scaled by $1/c$.
+\end{itemize}
+
+\subsection*{Scaling Labels}
+\begin{itemize}
+    \item \textbf{Operation:} Scale the target vector $\mathbf{y}$ by a constant $c$. $\mathbf{y}' = c\mathbf{y}$.
+    \item \textbf{Proof:}
+    \begin{align*}
+    \hat{\mathbf{w}}' &= (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}' \\
+    &= (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T (c\mathbf{y}) \\
+    &= c \cdot [(\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}] = c \cdot \hat{\mathbf{w}}
+    \end{align*}
+    \item \textbf{Effect:} All weights, including the bias term, are scaled by $c$.
+\end{itemize}
+
+\subsection*{Duplicating Rows}
+\begin{itemize}
+    \item \textbf{Operation:} Stack the entire dataset $(\mathbf{X}, \mathbf{y})$ on top of itself.
+    \item \textbf{Proof:} The new matrices are $\mathbf{X}' = \begin{pmatrix} \mathbf{X} \\ \mathbf{X} \end{pmatrix}$ and $\mathbf{y}' = \begin{pmatrix} \mathbf{y} \\ \mathbf{y} \end{pmatrix}$.
+    \begin{align*}
+    (\mathbf{X}')^T \mathbf{X}' &= \begin{pmatrix} \mathbf{X}^T & \mathbf{X}^T \end{pmatrix} \begin{pmatrix} \mathbf{X} \\ \mathbf{X} \end{pmatrix} = 2(\mathbf{X}^T \mathbf{X}) \\
+    (\mathbf{X}')^T \mathbf{y}' &= \begin{pmatrix} \mathbf{X}^T & \mathbf{X}^T \end{pmatrix} \begin{pmatrix} \mathbf{y} \\ \mathbf{y} \end{pmatrix} = 2(\mathbf{X}^T \mathbf{y}) \\
+    \hat{\mathbf{w}}' &= (2(\mathbf{X}^T \mathbf{X}))^{-1} (2(\mathbf{X}^T \mathbf{y})) \\
+    &= \frac{1}{2} (\mathbf{X}^T \mathbf{X})^{-1} (2 \mathbf{X}^T \mathbf{y}) = \hat{\mathbf{w}}
+    \end{align*}
+    \item \textbf{Effect:} The solution $\hat{\mathbf{w}}$ is unchanged.
+\end{itemize}
+
+\subsection*{Removing Bias Term}
+\begin{itemize}
+    \item \textbf{Operation:} The original matrix $\mathbf{X} = [\mathbf{1}, \mathbf{X}_f]$ (where $\mathbf{X}_f$ are the features) becomes $\mathbf{X}' = \mathbf{X}_f$.
+    \item \textbf{Proof:} The new solution $\hat{\mathbf{w}}' = (\mathbf{X}_f^T \mathbf{X}_f)^{-1} \mathbf{X}_f^T \mathbf{y}$ is not trivially related to the original $\hat{\mathbf{w}}$.
+    \item \textbf{Effect:} The solution changes completely. The new model is forced to pass through the origin, which alters all coefficients.
+\end{itemize}
+
+\subsection*{Adding Dummy/Constant Features}
+\begin{itemize}
+    \item \textbf{Operation:} Add a new feature column that is constant, e.g., $\mathbf{x}_{\text{new}} = c \cdot \mathbf{1}$.
+    \item \textbf{Proof:} The original matrix $\mathbf{X}$ already has a bias column (a column of 1s). The new column is a perfect linear combination of the bias column ($\mathbf{x}_{\text{new}} = c \cdot \mathbf{x}_0$). This is \textbf{perfect multicollinearity}.
+    \item \textbf{Effect:} The columns of $\mathbf{X}'$ are linearly dependent, so the Gram matrix $(\mathbf{X}')^T \mathbf{X}'$ is singular (not invertible). A unique closed-form solution does not exist.
+\end{itemize}
+
+\subsection*{Duplicating Features}
+\begin{itemize}
+    \item \textbf{Operation:} Add a new feature column $\mathbf{x}_k$ that is identical to an existing column $\mathbf{x}_j$.
+    \item \textbf{Proof:} The new column $\mathbf{x}_k$ is a perfect linear combination of $\mathbf{x}_j$ (i.e., $\mathbf{x}_k = 1 \cdot \mathbf{x}_j$). This is \textbf{perfect multicollinearity}.
+    \item \textbf{Effect:} The Gram matrix $(\mathbf{X}')^T \mathbf{X}'$ is singular. A unique closed-form solution does not exist.
+\end{itemize}
+
+\subsection*{Adding a Single Data Row}
+\begin{itemize}
+    \item \textbf{Operation:} Add a new row $[\mathbf{x}_{\text{new}}^\top, y_{\text{new}}]$ to the dataset.
+    \item \textbf{Proof:} The new matrices are $\mathbf{X}' = \begin{pmatrix} \mathbf{X} \\ \mathbf{x}_{\text{new}}^\top \end{pmatrix}$ and $\mathbf{y}' = \begin{pmatrix} \mathbf{y} \\ y_{\text{new}} \end{pmatrix}$.
+    \begin{align*}
+    (\mathbf{X}')^T \mathbf{X}' &= (\mathbf{X}^T \mathbf{X} + \mathbf{x}_{\text{new}} \mathbf{x}_{\text{new}}^\top) \\
+    (\mathbf{X}')^T \mathbf{y}' &= (\mathbf{X}^T \mathbf{y} + \mathbf{x}_{\text{new}} y_{\text{new}}) \\
+    \hat{\mathbf{w}}' &= (\mathbf{X}^T \mathbf{X} + \mathbf{x}_{\text{new}} \mathbf{x}_{\text{new}}^\top)^{-1} (\mathbf{X}^T \mathbf{y} + \mathbf{x}_{\text{new}} y_{\text{new}})
+    \end{align*}
+    \item \textbf{Effect:} The solution $\hat{\mathbf{w}}$ changes. The new solution can be found from the old one using the Sherman-Morrison formula for rank-1 updates, but it is not a simple scaling.
+\end{itemize}
+% ============================================================   
 \end{multicols}
 \end{document}

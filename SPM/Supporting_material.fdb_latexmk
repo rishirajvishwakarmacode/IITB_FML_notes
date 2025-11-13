@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1762978817.55979 "d:/Important Subjects/Machine Learning/Notes/SPM/Supporting_material.tex" "Supporting_material.pdf" "Supporting_material" 1762978819.32316 0
+["pdflatex"] 1763035054.24818 "d:/Important Subjects/Machine Learning/Notes/SPM/Supporting_material.tex" "Supporting_material.pdf" "Supporting_material" 1763035056.03375 0
   "C:/Users/DELL/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1762976558 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/DELL/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcss1000.pk" 1762977604 10628 5ab3c4f7895e89c66951b20d9f5736ce ""
   "C:/Users/DELL/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1761304206 13307671 32d44beb727c17d1343a01904f97361c ""
@@ -224,10 +224,10 @@
   "C:/latex/MiKTeX/tex/latex/trimspaces/trimspaces.sty" 1253169183 1380 971a51b00a14503ddf754cab24c3f209 ""
   "C:/latex/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/latex/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
-  "Supporting_material.aux" 1762978819 269 f0a0c30f47e1f5126ce6e968ee46a209 "pdflatex"
-  "Supporting_material.out" 1762978819 40 f033b1e40b8734b8ab3f517f85422c37 "pdflatex"
-  "Supporting_material.tex" 1762978816 22422 760edae6ed8f7cb62ce5ee53afcc791b ""
-  "d:/Important Subjects/Machine Learning/Notes/SPM/Supporting_material.tex" 1762978816 22422 760edae6ed8f7cb62ce5ee53afcc791b ""
+  "Supporting_material.aux" 1763035055 1642 b87db6cf993f689085e912d238363879 "pdflatex"
+  "Supporting_material.out" 1763035055 1623 4815134a04e50fdbe2ae8c68e744fe44 "pdflatex"
+  "Supporting_material.tex" 1763035051 25289 59a3cf8fc50143a8e8adb28693f22913 ""
+  "d:/Important Subjects/Machine Learning/Notes/SPM/Supporting_material.tex" 1763035051 25289 59a3cf8fc50143a8e8adb28693f22913 ""
   (generated)
   "Supporting_material.aux"
   "Supporting_material.log"

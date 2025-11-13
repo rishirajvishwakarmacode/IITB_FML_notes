@@ -769,6 +769,117 @@ Cross-Entropy & $\min D_{KL}(y\|p_\theta)$ & supervised classification loss \\
 \end{tabular}
 % ============================================================
 
+% ============================================================
+\section{Multivariate Gaussian Distribution}
+
+\subsection{Definition}
+An $M$-dimensional random vector $x \in \mathbb{R}^M$ follows a multivariate
+Gaussian distribution if
+\[
+x \sim \mathcal{N}(\mu, \Sigma),
+\]
+where $\mu \in \mathbb{R}^M$ is the mean and $\Sigma \in \mathbb{R}^{M \times M}$
+is a symmetric positive-definite covariance matrix.  
+The density is
+\[
+p(x)
+= \frac{1}{(2\pi)^{M/2} \det(\Sigma)^{1/2}}
+  \exp\!\left(
+  -\frac{1}{2}(x - \mu)^\top \Sigma^{-1}(x - \mu)
+  \right).
+\]
+
+\subsection{Basic Properties}
+\[
+\mathbb{E}[x] = \mu,
+\qquad
+\mathrm{Cov}(x) = \Sigma,
+\qquad
+\mathbb{E}[xx^\top] = \Sigma + \mu\mu^\top.
+\]
+
+\subsection{Linear Transformations}
+If $y = A x + b$, where $A$ is a matrix and $b$ a vector, then
+\[
+y \sim \mathcal{N}(A\mu + b,\ \, A\Sigma A^\top).
+\]
+
+\subsection{Partitioned Form, Marginals, Conditionals}
+Let
+\[
+x = \begin{pmatrix} x_1 \\ x_2 \end{pmatrix},\quad
+\mu = \begin{pmatrix} \mu_1 \\ \mu_2 \end{pmatrix},\quad
+\Sigma =
+\begin{pmatrix}
+\Sigma_{11} & \Sigma_{12} \\
+\Sigma_{21} & \Sigma_{22}
+\end{pmatrix}.
+\]
+
+\paragraph{Marginals.}
+\[
+x_1 \sim \mathcal{N}(\mu_1, \Sigma_{11}),
+\qquad
+x_2 \sim \mathcal{N}(\mu_2, \Sigma_{22}).
+\]
+
+\paragraph{Conditional Distribution.}
+\[
+x_1 \mid x_2 
+\sim 
+\mathcal{N}\!\left(
+\mu_1 + \Sigma_{12}\Sigma_{22}^{-1}(x_2 - \mu_2),\ 
+\Sigma_{11} - \Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}
+\right).
+\]
+
+\subsection{Product of Two Gaussians}
+The product of two Gaussians (up to normalization) is Gaussian:
+\[
+\mathcal{N}(x \mid \mu_1,\Sigma_1)\,
+\mathcal{N}(x \mid \mu_2,\Sigma_2)
+\propto
+\mathcal{N}(x \mid \mu,\Sigma),
+\]
+with
+\[
+\Sigma^{-1} = \Sigma_1^{-1} + \Sigma_2^{-1},
+\qquad
+\mu = \Sigma\,(\Sigma_1^{-1}\mu_1 + \Sigma_2^{-1}\mu_2).
+\]
+
+\subsection{Sampling}
+To sample $x \sim \mathcal{N}(\mu,\Sigma)$:
+\begin{enumerate}
+    \item Compute Cholesky: $\Sigma = LL^\top$.
+    \item Draw $z \sim \mathcal{N}(0, I)$.
+    \item Set $x = \mu + Lz$.
+\end{enumerate}
+
+\subsection{KL Divergence Between Gaussians}
+For $p=\mathcal{N}(\mu_1,\Sigma_1)$ and $q=\mathcal{N}(\mu_2,\Sigma_2)$,
+\[
+\mathrm{KL}(p \| q)
+= \frac{1}{2}\left[
+\mathrm{tr}(\Sigma_2^{-1}\Sigma_1)
++ (\mu_2-\mu_1)^\top \Sigma_2^{-1}(\mu_2-\mu_1)
+- M
++ \ln\frac{\det\Sigma_2}{\det\Sigma_1}
+\right].
+\]
+
+\subsection{Key Facts to Remember}
+\begin{itemize}
+    \item Level sets are ellipsoids: 
+    $(x-\mu)^\top \Sigma^{-1}(x-\mu)=c$.
+    \item Closed under linear transformations.
+    \item Closed under marginalization.
+    \item Closed under conditioning.
+    \item Product of Gaussians is Gaussian.
+    \item Gaussian prior + Gaussian likelihood gives Gaussian posterior.
+\end{itemize}
+% ============================================================
+
 
 \end{multicols}
 
