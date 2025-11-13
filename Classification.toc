@@ -1,0 +1,10 @@
+\contentsline {chapter}{\numberline {1}Discriminant Functions}{2}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Discriminant Functions for Two Classes}{2}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Decision Boundary and Classification Rule}{2}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Geometric Properties of the Decision Surface}{2}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}Augmented Input Space}{4}{subsection.1.1.3}%
+\contentsline {section}{\numberline {1.2}Multiple Classes (K > 2)}{5}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}K-Class Discriminant Function}{5}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Decision Boundaries}{6}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Convexity of Decision Regions}{6}{subsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.2.4}Classification Rule}{7}{subsection.1.2.4}%

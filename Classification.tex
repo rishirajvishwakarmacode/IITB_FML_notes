@@ -1,0 +1,379 @@
+\documentclass[12pt, a4paper]{report}
+
+% --------------------
+% PAGE LAYOUT
+% --------------------
+\usepackage[margin=1.5cm]{geometry} % Sets 1-inch margins
+
+% --------------------
+% FONT & ENCODING
+% --------------------
+\usepackage[utf8]{inputenc}   % Input encoding
+\usepackage[T1]{fontenc}      % Font encoding
+\usepackage{lmodern}          % Use Latin Modern fonts
+\usepackage{xcolor}           % For defining colors
+
+% --------------------
+% MATH & SYMBOLS
+% --------------------
+\usepackage{amsmath}        % Core AMS math package
+\usepackage{amssymb}        % AMS math symbols (like \mathbb)
+\usepackage{amsfonts}       % AMS math fonts
+\usepackage{mathtools}      % Extends amsmath (e.g., \coloneqq)
+\usepackage{bm}             % For bold math symbols (\bm{\phi})
+
+% --------------------
+% THEOREMS, PROOFS, & DEFINITIONS
+% --------------------
+\usepackage{amsthm}
+
+% Style for theorems, lemmas, propositions
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]     % Numbered like 1.1, 1.2
+\newtheorem{lemma}[theorem]{Lemma}         % Shares counter with theorem
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+% Style for definitions, examples
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+% Style for remarks
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Custom environment for questions
+% This will be numbered separately: Question 1, Question 2, etc.
+\newtheorem{question}{Question}
+
+% The \begin{proof} ... \end{proof} environment is already defined by amsthm
+
+% --------------------
+% OTHER USEFUL PACKAGES
+% --------------------
+\usepackage{graphicx}       % For including images
+\usepackage{booktabs}       % For professional-looking tables
+\usepackage{hyperref}       % For clickable links and table of contents
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=green,
+}
+
+% --------------------
+% HEADER & FOOTER
+% --------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{Rishi Raj Vishwakarma - Linear Models for Classification}
+\rhead{CMInDS, IIT Bombay} % You can change this
+\cfoot{\thepage}
+
+% --------------------
+% DOCUMENT START
+% --------------------
+
+% Set a title
+\title{Notes on Linear Models for Classification}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\chapter{Discriminant Functions}
+\section{Discriminant Functions for Two Classes}
+This section covers the simplest case of a linear discriminant for a two-class classification problem.
+
+\begin{definition}[Linear Discriminant Function (2 Classes)]
+A linear discriminant function is defined by taking a linear function of the input vector $\mathbf{x}$:
+\begin{equation}
+    y(\mathbf{x}) = \mathbf{w}^T\mathbf{x} + w_0
+\end{equation}
+where $\mathbf{w}$ is the \textbf{weight vector} and $w_0$ is the \textbf{bias}. The negative of the bias, $-w_0$, is sometimes referred to as a \textbf{threshold}.
+\end{definition}
+
+\subsection{Decision Boundary and Classification Rule}
+
+\begin{definition}[Classification Rule]
+An input vector $\mathbf{x}$ is assigned to class $\mathcal{C}_1$ if $y(\mathbf{x}) \ge 0$ and to class $\mathcal{C}_2$ otherwise (i.e., if $y(\mathbf{x}) < 0$).
+\end{definition}
+
+\begin{definition}[Decision Surface]
+The \textbf{decision boundary} (or decision surface) is the set of points where the discriminant function is zero. It is defined by the relation:
+\begin{equation}
+    y(\mathbf{x}) = \mathbf{w}^T\mathbf{x} + w_0 = 0
+\end{equation}
+For a $D$-dimensional input space $\mathbf{x}$, this equation defines a $(D-1)$-dimensional hyperplane.
+\end{definition}
+
+\subsection{Geometric Properties of the Decision Surface}
+
+We can derive several key geometric properties from the definition of the linear discriminant.
+
+\begin{proposition}[Orientation of the Decision Surface]
+The weight vector $\mathbf{w}$ is orthogonal (perpendicular) to every vector lying within the decision surface. Therefore, $\mathbf{w}$ determines the orientation of the decision surface.
+\end{proposition}
+
+\begin{proof}
+Let $\mathbf{x}_A$ and $\mathbf{x}_B$ be any two distinct points that lie on the decision surface.
+By definition, $y(\mathbf{x}_A) = 0$ and $y(\mathbf{x}_B) = 0$.
+\begin{align*}
+    \mathbf{w}^T\mathbf{x}_A + w_0 &= 0 \\
+    \mathbf{w}^T\mathbf{x}_B + w_0 &= 0
+\end{align*}
+Subtracting the second equation from the first gives:
+\begin{align*}
+    (\mathbf{w}^T\mathbf{x}_A + w_0) - (\mathbf{w}^T\mathbf{x}_B + w_0) &= 0 - 0 \\
+    \mathbf{w}^T\mathbf{x}_A - \mathbf{w}^T\mathbf{x}_B &= 0 \\
+    \mathbf{w}^T(\mathbf{x}_A - \mathbf{x}_B) &= 0
+\end{align*}
+The vector $(\mathbf{x}_A - \mathbf{x}_B)$ is a vector that lies in the decision surface (it connects two points on the surface). Since its dot product with $\mathbf{w}$ is zero, $\mathbf{w}$ must be orthogonal to this vector. This holds for any two points $\mathbf{x}_A, \mathbf{x}_B$ on the surface, proving the proposition.
+\end{proof}
+
+\begin{proposition}[Location of the Decision Surface]
+The bias parameter $w_0$ determines the location of the decision surface relative to the origin. Specifically, the normal distance from the origin to the hyperplane is $\frac{-w_0}{\|\mathbf{w}\|}$.
+\end{proposition}
+
+\begin{proof}
+Let $\mathbf{x}_{\text{ds}}$ be any point on the decision surface. The perpendicular distance from the origin to the hyperplane is the projection of the vector $\mathbf{x}_{\text{ds}}$ onto the normal vector $\mathbf{w}$.
+The unit normal vector is $\frac{\mathbf{w}}{\|\mathbf{w}\|}$.
+The distance (as a scalar) is the dot product of $\mathbf{x}_{\text{ds}}$ with this unit normal:
+\begin{equation*}
+    \text{Distance} = \mathbf{x}_{\text{ds}}^T \left( \frac{\mathbf{w}}{\|\mathbf{w}\|} \right) = \frac{\mathbf{w}^T\mathbf{x}_{\text{ds}}}{\|\mathbf{w}\|}
+\end{equation*}
+From the definition of the decision surface, we know that $\mathbf{w}^T\mathbf{x}_{\text{ds}} + w_0 = 0$, which implies $\mathbf{w}^T\mathbf{x}_{\text{ds}} = -w_0$.
+Substituting this into our distance equation, we get:
+\begin{equation}
+    \text{Distance from origin} = \frac{-w_0}{\|\mathbf{w}\|}
+\end{equation}
+Thus, the location of the plane is controlled by $w_0$ (relative to the magnitude of $\mathbf{w}$).
+\end{proof}
+
+\begin{proposition}[Perpendicular Distance from a Point $\mathbf{x}$]
+The value of $y(\mathbf{x})$ provides a signed measure of the perpendicular distance $r$ from the point $\mathbf{x}$ to the decision surface. The distance is given by:
+\begin{equation}
+    r = \frac{y(\mathbf{x})}{\|\mathbf{w}\|}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Let $\mathbf{x}$ be an arbitrary point in the input space. Let $\mathbf{x}_{\perp}$ be its orthogonal projection onto the decision surface, so $y(\mathbf{x}_{\perp}) = 0$.
+Let $r$ be the signed perpendicular distance from $\mathbf{x}_{\perp}$ to $\mathbf{x}$. The vector from $\mathbf{x}_{\perp}$ to $\mathbf{x}$ is parallel to the normal vector $\mathbf{w}$. We can therefore write this vector as $r \frac{\mathbf{w}}{\|\mathbf{w}\|}$.
+We can decompose the vector $\mathbf{x}$ as the sum of its projection on the plane and this normal component:
+\begin{equation*}
+    \mathbf{x} = \mathbf{x}_{\perp} + r \frac{\mathbf{w}}{\|\mathbf{w}\|}
+\end{equation*}
+Now, let's evaluate the discriminant function $y(\mathbf{x})$ by multiplying by $\mathbf{w}^T$ and adding $w_0$:
+\begin{align*}
+    y(\mathbf{x}) &= \mathbf{w}^T\mathbf{x} + w_0 \\
+           &= \mathbf{w}^T\left( \mathbf{x}_{\perp} + r \frac{\mathbf{w}}{\|\mathbf{w}\|} \right) + w_0 \\
+           &= (\mathbf{w}^T\mathbf{x}_{\perp} + w_0) + \mathbf{w}^T\left( r \frac{\mathbf{w}}{\|\mathbf{w}\|} \right) \\
+\end{align*}
+We know that $y(\mathbf{x}_{\perp}) = \mathbf{w}^T\mathbf{x}_{\perp} + w_0 = 0$, because $\mathbf{x}_{\perp}$ is on the decision surface.
+\begin{align*}
+    y(\mathbf{x}) &= 0 + r \left( \frac{\mathbf{w}^T\mathbf{w}}{\|\mathbf{w}\|} \right) \\
+           &= r \left( \frac{\|\mathbf{w}\|^2}{\|\mathbf{w}\|} \right) \\
+           &= r \|\mathbf{w}\| \quad \text{}
+\end{align*}
+Rearranging this result to solve for the distance $r$, we find:
+\begin{equation}
+    r = \frac{y(\mathbf{x})}{\|\mathbf{w}\|} \quad \text{}
+\end{equation}
+This confirms that $y(\mathbf{x})$ is proportional to the signed perpendicular distance from $\mathbf{x}$ to the boundary.
+\end{proof}
+
+\subsection{Augmented Input Space}
+It is often convenient to use a more compact notation by augmenting the input vector $\mathbf{x}$.
+
+\begin{definition}[Augmented Vectors]
+We introduce a "dummy" input $x_0 = 1$ and define the augmented input vector $\tilde{\mathbf{x}}$ and augmented weight vector $\tilde{\mathbf{w}}$ as:
+\begin{align}
+    \tilde{\mathbf{x}} &= (x_0, x_1, \dots, x_D)^T = (1, \mathbf{x})^T \\
+    \tilde{\mathbf{w}} &= (w_0, w_1, \dots, w_D)^T = (w_0, \mathbf{w})^T
+\end{align}
+\end{definition}
+
+\begin{proposition}
+The linear discriminant function $y(\mathbf{x}) = \mathbf{w}^T\mathbf{x} + w_0$ can be written in the augmented space as:
+\begin{equation}
+    y(\mathbf{x}) = \tilde{\mathbf{w}}^T\tilde{\mathbf{x}} \quad \text{}
+\end{equation}
+\end{proposition}
+\begin{proof}
+\begin{align*}
+    \tilde{\mathbf{w}}^T\tilde{\mathbf{x}} &=
+    \begin{pmatrix}
+        w_0 \\
+        w_1 \\
+        \vdots \\
+        w_D
+    \end{pmatrix}^T
+    \begin{pmatrix}
+        x_0 \\
+        x_1 \\
+        \vdots \\
+        x_D
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        w_0 \\
+        \mathbf{w}
+    \end{pmatrix}^T
+    \begin{pmatrix}
+        1 \\
+        \mathbf{x}
+    \end{pmatrix} \\
+    &= w_0 \cdot 1 + w_1 x_1 + \dots + w_D x_D \\
+    &= w_0 + \mathbf{w}^T\mathbf{x} = y(\mathbf{x})
+\end{align*}
+In this $(D+1)$-dimensional augmented space, the decision surface $y(\mathbf{x}) = 0$ is defined by $\tilde{\mathbf{w}}^T\tilde{\mathbf{x}} = 0$, which is a $D$-dimensional hyperplane that passes directly through the origin.
+\end{proof}
+\begin{proposition}[Perpendicular Distance from a Point $\mathbf{x}$]
+The value of $y(\mathbf{x})$ provides a signed measure of the perpendicular distance $r$ from the point $\mathbf{x}$ to the decision surface. The distance is given by:
+\begin{equation}
+    r = \frac{y(\mathbf{x})}{\|\mathbf{w}\|}
+\end{equation}
+\end{proposition}
+
+\begin{proof}[Proof 1 (Geometric Projection)]
+Let $\mathbf{x}$ be an arbitrary point in the input space. Let $\mathbf{x}_{\perp}$ be its orthogonal projection onto the decision surface, which means $y(\mathbf{x}_{\perp}) = 0$.
+
+Let $r$ be the signed perpendicular distance from $\mathbf{x}_{\perp}$ to $\mathbf{x}$. The vector from $\mathbf{x}_{\perp}$ to $\mathbf{x}$ is parallel to the normal vector $\mathbf{w}$. We can therefore write this vector as $r \frac{\mathbf{w}}{\|\mathbf{w}\|}$.
+
+We can decompose the vector $\mathbf{x}$ as the sum of its projection on the plane and this normal component:
+\begin{equation*}
+    \mathbf{x} = \mathbf{x}_{\perp} + r \frac{\mathbf{w}}{\|\mathbf{w}\|}
+\end{equation*}
+Now, let's evaluate the discriminant function $y(\mathbf{x})$ by multiplying by $\mathbf{w}^T$ and adding $w_0$:
+\begin{align*}
+    y(\mathbf{x}) &= \mathbf{w}^T\mathbf{x} + w_0 \\
+           &= \mathbf{w}^T\left( \mathbf{x}_{\perp} + r \frac{\mathbf{w}}{\|\mathbf{w}\|} \right) + w_0 \\
+           &= (\mathbf{w}^T\mathbf{x}_{\perp} + w_0) + \mathbf{w}^T\left( r \frac{\mathbf{w}}{\|\mathbf{w}\|} \right) \\
+\end{align*}
+We know that $y(\mathbf{x}_{\perp}) = \mathbf{w}^T\mathbf{x}_{\perp} + w_0 = 0$, because $\mathbf{x}_{\perp}$ is on the decision surface.
+\begin{align*}
+    y(\mathbf{x}) &= 0 + r \left( \frac{\mathbf{w}^T\mathbf{w}}{\|\mathbf{w}\|} \right) \\
+           &= r \left( \frac{\|\mathbf{w}\|^2}{\|\mathbf{w}\|} \right) \\
+           &= r \|\mathbf{w}\|
+\end{align*}
+Rearranging this result to solve for the distance $r$, we find:
+\begin{equation}
+    r = \frac{y(\mathbf{x})}{\|\mathbf{w}\|}
+\end{equation}
+This confirms that $y(\mathbf{x})$ is proportional to the signed perpendicular distance from $\mathbf{x}$ to the boundary. The absolute distance is $\frac{|y(\mathbf{x})|}{\|\mathbf{w}\|}$.
+\end{proof}
+
+\begin{proof}[Proof 2 (by Optimization, based on your image)]
+The perpendicular distance is the minimum distance from $\mathbf{x}$ to any point $\mathbf{v}$ on the hyperplane.
+$$ \text{distance} = \min_{\mathbf{v}}\{\|\mathbf{x} - \mathbf{v}\|\} \quad \text{subject to} \quad \mathbf{w}^T\mathbf{v} + w_0 = 0. $$
+Let the closest point on the plane be $\mathbf{v}$. The vector from $\mathbf{v}$ to $\mathbf{x}$ must be normal to the plane, so $\mathbf{x} - \mathbf{v}$ is parallel to $\mathbf{w}$. We can write:
+$$ \mathbf{x} - \mathbf{v} = k\mathbf{w} \implies \mathbf{v} = \mathbf{x} - k\mathbf{w} $$
+for some scalar $k$. We find $k$ by enforcing the constraint $\mathbf{w}^T\mathbf{v} + w_0 = 0$:
+\begin{align*}
+    \mathbf{w}^T(\mathbf{x} - k\mathbf{w}) + w_0 &= 0 \\
+    \mathbf{w}^T\mathbf{x} - k(\mathbf{w}^T\mathbf{w}) + w_0 &= 0 \\
+    (\mathbf{w}^T\mathbf{x} + w_0) - k\|\mathbf{w}\|^2 &= 0 \\
+    y(\mathbf{x}) &= k\|\mathbf{w}\|^2 \implies k = \frac{y(\mathbf{x})}{\|\mathbf{w}\|^2}
+\end{align*}
+This confirms that the vector $\mathbf{x} - \mathbf{v} = \frac{y(\mathbf{x})}{\|\mathbf{w}\|^2}\mathbf{w}$. The distance is the magnitude of this vector:
+$$ \|\mathbf{x} - \mathbf{v}\| = \left\| \frac{y(\mathbf{x})}{\|\mathbf{w}\|^2}\mathbf{w} \right\| = \left| \frac{y(\mathbf{x})}{\|\mathbf{w}\|^2} \right| \|\mathbf{w}\| = \frac{|y(\mathbf{x})|}{\|\mathbf{w}\|} $$
+To show this is the minimum, let $\mathbf{u}$ be any other point on the plane ($\mathbf{w}^T\mathbf{u} + w_0 = 0$).
+\begin{align*}
+    \|\mathbf{x} - \mathbf{u}\|^2 &= \|\mathbf{x} - \mathbf{v} + \mathbf{v} - \mathbf{u}\|^2 \\
+    &= \|\mathbf{x} - \mathbf{v}\|^2 + \|\mathbf{v} - \mathbf{u}\|^2 + 2(\mathbf{x} - \mathbf{v})^T(\mathbf{v} - \mathbf{u})
+\end{align*}
+The cross-term is $2(\mathbf{x} - \mathbf{v})^T(\mathbf{v} - \mathbf{u}) = 2\left(\frac{y(\mathbf{x})}{\|\mathbf{w}\|^2}\mathbf{w}\right)^T(\mathbf{v} - \mathbf{u}) = 2\frac{y(\mathbf{x})}{\|\mathbf{w}\|^2} \mathbf{w}^T(\mathbf{v} - \mathbf{u})$.
+Since $\mathbf{w}^T\mathbf{v} = -w_0$ and $\mathbf{w}^T\mathbf{u} = -w_0$, the term $\mathbf{w}^T(\mathbf{v} - \mathbf{u}) = 0$.
+Thus, $\|\mathbf{x} - \mathbf{u}\|^2 = \|\mathbf{x} - \mathbf{v}\|^2 + \|\mathbf{v} - \mathbf{u}\|^2$.
+Because $\|\mathbf{v} - \mathbf{u}\|^2 \ge 0$, we have $\|\mathbf{x} - \mathbf{u}\|^2 \ge \|\mathbf{x} - \mathbf{v}\|^2$.
+This proves the minimum distance is $\|\mathbf{x} - \mathbf{v}\| = \frac{|y(\mathbf{x})|}{\|\mathbf{w}\|}$.
+\end{proof}
+\section{Multiple Classes (K > 2)}
+Simple approaches to creating a $K$-class discriminant from multiple two-class discriminants, such as the \textbf{one-versus-the-rest} or \textbf{one-versus-one} schemes, run into difficulties. Both methods can create ambiguous regions in the input space where the classification is not clearly defined.
+
+\subsection{K-Class Discriminant Function}
+We can avoid these problems by defining a single $K$-class discriminant composed of $K$ separate linear functions, one for each class $\mathcal{C}_k$:
+\begin{definition}[K-Class Discriminant]
+The discriminant is defined by a set of $K$ linear functions of the form:
+\begin{equation}
+    y_k(\mathbf{x}) = \mathbf{w}_k^T\mathbf{x} + w_{k0}
+\end{equation}
+for $k = 1, \dots, K$. Each class $\mathcal{C}_k$ has its own weight vector $\mathbf{w}_k$ and bias $w_{k0}$.
+\end{definition}
+
+\subsection{Decision Boundaries}
+The decision boundary between any two classes, $\mathcal{C}_k$ and $\mathcal{C}_j$, is the set of points $\mathbf{x}$ where their discriminant functions are equal (i.e., they "tie").
+\begin{equation}
+    y_k(\mathbf{x}) = y_j(\mathbf{x})
+\end{equation}
+We can derive the explicit form of this boundary:
+\begin{align*}
+    \mathbf{w}_k^T\mathbf{x} + w_{k0} &= \mathbf{w}_j^T\mathbf{x} + w_{j0} \\
+    \mathbf{w}_k^T\mathbf{x} - \mathbf{w}_j^T\mathbf{x} + w_{k0} - w_{j0} &= 0 \\
+    (\mathbf{w}_k - \mathbf{w}_j)^T\mathbf{x} + (w_{k0} - w_{j0}) &= 0
+\end{align*}
+
+\begin{remark}[Analogy to Two-Class Case]
+This resulting boundary equation has the exact same form as the linear discriminant for the two-class case, $y(\mathbf{x}) = \mathbf{w}^T\mathbf{x} + w_0 = 0$.
+In this multi-class context, we can think of the boundary between $\mathcal{C}_k$ and $\mathcal{C}_j$ as being defined by an equivalent weight vector $\mathbf{w} = (\mathbf{w}_k - \mathbf{w}_j)$ and an equivalent bias $w_0 = (w_{k0} - w_{j0})$.
+This shows that the boundary between any two classes is a single $(D-1)$-dimensional hyperplane.
+\end{remark}
+
+\subsection{Convexity of Decision Regions}
+The decision regions formed by this discriminant are always singly connected and convex.
+
+\begin{proposition}
+The decision region $\mathcal{R}_k$ for class $\mathcal{C}_k$ (the set of all points $\mathbf{x}$ assigned to $\mathcal{C}_k$) is convex.
+\end{proposition}
+
+\begin{proof}
+Consider two points, $\mathbf{x}_A$ and $\mathbf{x}_B$, both of which lie inside the decision region $\mathcal{R}_k$.
+By definition, this means that for $\mathbf{x}_A$ and $\mathbf{x}_B$, the discriminant $y_k$ is larger than all other discriminants:
+\begin{align*}
+    \forall j \neq k, \quad y_k(\mathbf{x}_A) > y_j(\mathbf{x}_A) \\
+    \forall j \neq k, \quad y_k(\mathbf{x}_B) > y_j(\mathbf{x}_B)
+\end{align*}
+Now, consider any point $\hat{\mathbf{x}}$ that lies on the line segment connecting $\mathbf{x}_A$ and $\mathbf{x}_B$. Such a point can be written as:
+\begin{equation}
+    \hat{\mathbf{x}} = \lambda \mathbf{x}_A + (1-\lambda)\mathbf{x}_B
+\end{equation}
+where $0 \le \lambda \le 1$.
+Let's evaluate the discriminant function $y_k$ at this point $\hat{\mathbf{x}}$. Due to the linearity of the function $y_k$:
+\begin{align*}
+    y_k(\hat{\mathbf{x}}) &= \mathbf{w}_k^T\hat{\mathbf{x}} + w_{k0} \\
+                 &= \mathbf{w}_k^T(\lambda \mathbf{x}_A + (1-\lambda)\mathbf{x}_B) + (\lambda + 1 - \lambda)w_{k0} \\
+                 &= \lambda(\mathbf{w}_k^T\mathbf{x}_A + w_{k0}) + (1-\lambda)(\mathbf{w}_k^T\mathbf{x}_B + w_{k0}) \\
+                 &= \lambda y_k(\mathbf{x}_A) + (1-\lambda)y_k(\mathbf{x}_B)
+\end{align*}
+The same linearity holds for any other discriminant $y_j(\mathbf{x})$.
+$$ y_j(\hat{\mathbf{x}}) = \lambda y_j(\mathbf{x}_A) + (1-\lambda)y_j(\mathbf{x}_B) $$
+Now we use our initial assumptions. Since $y_k(\mathbf{x}_A) > y_j(\mathbf{x}_A)$ and $y_k(\mathbf{x}_B) > y_j(\mathbf{x}_B)$, and given that $\lambda \ge 0$ and $(1-\lambda) \ge 0$:
+\begin{align*}
+    \lambda y_k(\mathbf{x}_A) &\ge \lambda y_j(\mathbf{x}_A) \\
+    (1-\lambda)y_k(\mathbf{What }_B) &\ge (1-\lambda)y_j(\mathbf{x}_B)
+\end{align*}
+Adding these two inequalities, we get:
+$$ \lambda y_k(\mathbf{x}_A) + (1-\lambda)y_k(\mathbf{x}_B) > \lambda y_j(\mathbf{x}_A) + (1-\lambda)y_j(\mathbf{x}_B) $$
+Substituting the linear combinations:
+$$ y_k(\hat{\mathbf{x}}) > y_j(\hat{\mathbf{x}}), \quad \text{for all } j \neq k $$
+This shows that the point $\hat{\mathbf{x}}$ also lies inside the decision region $\mathcal{R}_k$. Since this is true for any point on the line segment between $\mathbf{x}_A$ and $\mathbf{x}_B$, the region $\mathcal{R}_k$ is, by definition, convex.
+\end{proof}
+
+\subsection{Classification Rule}
+The discriminant functions are used to classify new points with a "winner-takes-all" rule.
+
+\begin{definition}[Classification Rule (K-Classes)]
+A new input vector $\mathbf{x}$ is assigned to the class $\mathcal{C}_k$ whose discriminant function $y_k(\mathbf{x})$ has the largest value:
+\[
+    \text{Assign } \mathbf{x} \text{ to } \mathcal{C}_k \quad \text{if} \quad y_k(\mathbf{x}) > y_j(\mathbf{x}) \text{ for all } j \neq k
+\]
+\end{definition}
+
+\end{document}
