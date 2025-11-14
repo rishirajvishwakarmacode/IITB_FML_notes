@@ -3128,4 +3128,1466 @@ If logits are \(z = W^\top x + b\), then
 
 \end{multicols}
 
+\chapter{Gradient Descent}
+% ============================================================
+\begin{multicols}{2}
+  
+\section{Descent}
+
+\subsection{1. Gradient Descent as a Descent Method}
+
+Consider a differentiable function \(f:\mathbb{R}^d\to\mathbb{R}\) and the GD update
+\[
+x_{k+1} = x_k - \eta \nabla f(x_k).
+\]
+We want \(f(x_{k+1}) < f(x_k)\).  
+This holds when the gradient is Lipschitz continuous with constant \(L>0\):
+\[
+\boxed{
+\|\nabla f(x) - \nabla f(y)\| \le L\|x-y\|,\quad \forall x,y.
+}
+\]
+
+Under this condition, the smoothness inequality states:
+\[
+f(y) \le f(x) + \nabla f(x)^\top(y-x) + \frac{L}{2}\|y-x\|^2.
+\]
+Setting \(y=x_k - \eta\nabla f(x_k)\) gives:
+\[
+f(x_{k+1})
+\le 
+f(x_k) - \eta\left(1 - \frac{L\eta}{2}\right)\|\nabla f(x_k)\|^2.
+\]
+Thus we obtain the descent condition
+\[
+\boxed{
+0 < \eta < \frac{2}{L}
+\quad\Longrightarrow\quad
+f(x_{k+1}) < f(x_k).
+}
+\]
+
+% ------------------------------------------------------------
+\subsection{2. Meaning of the Lipschitz Constant \(L\)}
+
+The Lipschitz gradient constant is
+\[
+\boxed{
+L = \sup_{x\neq y} 
+\frac{\|\nabla f(x)-\nabla f(y)\|}{\|x-y\|}.
+}
+\]
+
+If \(f\) is twice differentiable,
+\[
+\boxed{
+L = \sup_x \lambda_{\max}\!\left(\nabla^2 f(x)\right),
+}
+\]
+i.e.\ the maximum curvature of \(f\).  
+Thus \(L\) bounds the Hessian:
+\[
+\nabla^2 f(x) \preceq L I.
+\]
+
+Equivalent smoothness inequality:
+\[
+f(y) \le f(x) + \nabla f(x)^\top(y-x) + \frac{L}{2}\|y-x\|^2.
+\]
+
+% ------------------------------------------------------------
+\subsection{3. Values of \(L\) in Common ML Models}
+
+\paragraph{(A) Linear Regression}
+\[
+f(w)=\tfrac12\|Xw-y\|^2,\qquad
+\nabla^2 f(w)=X^\top X.
+\]
+Hence
+\[
+\boxed{
+L = \lambda_{\max}(X^\top X).
+}
+\]
+
+\paragraph{(B) Logistic Regression}
+The Hessian is
+\[
+\nabla^2f(w)=X^\top R X,\quad
+R=\operatorname{diag}(p_n(1-p_n)).
+\]
+Since \(0<p_n(1-p_n)\le \tfrac14\),
+\[
+X^\top R X \preceq \tfrac14 X^\top X.
+\]
+Thus
+\[
+\boxed{
+L \le \frac14\,\lambda_{\max}(X^\top X).
+}
+\]
+
+\paragraph{(C) Softmax Regression}
+Same upper bound:
+\[
+\boxed{
+L \le \frac14\,\lambda_{\max}(X^\top X).
+}
+\]
+
+% ------------------------------------------------------------
+\subsection{4. Importance of \(L\)}
+The Lipschitz constant sets the maximum stable learning rate:
+\[
+\boxed{
+0 < \eta < \frac{2}{L}.
+}
+\]
+If \(\eta > 2/L\), GD diverges:
+\[
+f(x_{k+1}) > f(x_k).
+\]
+
+% ------------------------------------------------------------
+\subsection{5. Summary}
+\[
+\boxed{
+\nabla f \text{ is } L\text{-Lipschitz} \;\Longrightarrow\; 
+0<\eta<\frac{2}{L} \Rightarrow f(x_{k+1})<f(x_k).
+}
+\]
+\[
+\boxed{
+L = \sup_x \lambda_{\max}(\nabla^2 f(x)).
+}
+\]
+\[
+\boxed{
+L_{\text{logistic}} \le \tfrac14\,\lambda_{\max}(X^\top X).
+}
+\]
+% ============================================================
+\subsection{Convergence for Quadratic Functions}
+
+\subsubsection*{Problem Setup}
+Consider the quadratic objective
+\[
+f(x)=\tfrac12 x^\top A x - b^\top x + c,
+\]
+where \(A \in \mathbb{R}^{d\times d}\) is symmetric positive definite (SPD) with
+\[
+0 < \mu = \lambda_{\min}(A) \le \lambda_{\max}(A)=L.
+\]
+The unique minimiser is
+\[
+x^\star = A^{-1} b.
+\]
+
+Gradient descent with step size \(\eta>0\):
+\[
+x_{k+1} = x_k - \eta (Ax_k - b).
+\]
+Define the error vector \(e_k := x_k - x^\star\).
+
+% ------------------------------------------------------------
+\subsubsection*{Linear Error Recurrence}
+Compute
+\[
+e_{k+1}
+= x_{k+1} - x^\star
+= x_k - x^\star - \eta A(x_k - x^\star)
+= (I - \eta A)e_k.
+\]
+Hence
+\[
+e_k = (I - \eta A)^k e_0.
+\]
+
+% ------------------------------------------------------------
+\subsubsection*{Spectral Analysis and Convergence Condition}
+Diagonalise \(A = Q\Lambda Q^\top\) (\(Q\) orthogonal, \(\Lambda=\mathrm{diag}(\lambda_i)\)). Then
+\[
+I - \eta A = Q(I - \eta\Lambda)Q^\top,
+\]
+with eigenvalues \(1 - \eta\lambda_i\).
+
+Gradient descent converges iff the spectral radius
+\[
+\rho(I-\eta A) = \max_i |1 - \eta\lambda_i| < 1.
+\]
+Thus for each \(\lambda\in[\mu,L]\),
+\[
+|1-\eta\lambda| < 1
+\quad\Longleftrightarrow\quad
+0 < \eta < \frac{2}{\lambda}.
+\]
+The most restrictive gives
+\[
+\boxed{
+0 < \eta < \frac{2}{L}.
+}
+\]
+
+Under this condition,
+\[
+\|e_k\|_2 \le \rho(I-\eta A)^k\, \|e_0\|_2.
+\]
+
+% ------------------------------------------------------------
+\subsubsection*{Convergence Rate and Optimal Step Size}
+Define the contraction factor
+\[
+\rho(\eta)=\max_{\lambda\in[\mu,L]} |1-\eta\lambda|
+           = \max\{|1-\eta\mu|,\;|1-\eta L|\}.
+\]
+To minimise \(\rho(\eta)\), balance endpoints:
+\[
+1-\eta\mu = \eta L - 1
+\quad\Longrightarrow\quad
+\eta^\star = \frac{2}{L+\mu}.
+\]
+
+The optimal convergence factor is
+\[
+\rho^\star
+= \frac{L-\mu}{L+\mu}
+= \frac{\kappa - 1}{\kappa + 1},
+\qquad \kappa = \frac{L}{\mu}.
+\]
+
+Thus,
+\[
+\boxed{
+\|e_k\|_2
+\le
+\left(\frac{\kappa-1}{\kappa+1}\right)^k
+\|e_0\|_2.
+}
+\]
+
+% ------------------------------------------------------------
+\subsubsection*{Convergence in Objective Value}
+Using
+\[
+f(x)-f(x^\star)=\tfrac12 e^\top A e,
+\qquad
+\mu\|e\|_2^2 \le e^\top A e \le L\|e\|_2^2,
+\]
+we obtain
+\[
+f(x_k)-f(x^\star)
+\le \tfrac12 L\,\|e_k\|_2^2
+\le \tfrac12 L\,\rho(\eta)^{2k}\,\|e_0\|_2^2.
+\]
+
+% ------------------------------------------------------------
+\subsubsection*{Final Statement}
+For the SPD quadratic objective,
+\[
+e_{k+1}=(I-\eta A)e_k,
+\qquad
+e_k=(I-\eta A)^k e_0.
+\]
+Gradient descent converges iff
+\[
+0 < \eta < \frac{2}{L}.
+\]
+With optimal step size \(\eta^\star = 2/(L+\mu)\),
+\[
+\boxed{
+\|x_k - x^\star\|_2
+\le
+\left(\frac{\kappa-1}{\kappa+1}\right)^k
+\|x_0 - x^\star\|_2.
+}
+\]
+% ============================================================
+\subsection{Convergence and Hessian}
+
+\subsubsection*{Curvature and the Hessian}
+For a twice-differentiable function \( f:\mathbb{R}^d \to \mathbb{R} \), the curvature at a point \(x\) is described by the Hessian
+\[
+H(x) = \nabla^2 f(x).
+\]
+The eigenvalues of \(H(x)\) quantify curvature in different directions:
+\[
+0 \le \lambda_i(H(x)) \le L,
+\]
+where
+\[
+L := \max_i \lambda_i(H(x))
+\]
+is the \emph{maximum curvature} (Lipschitz constant of the gradient).
+
+% ------------------------------------------------------------
+\subsubsection*{Why Curvature Controls the Step Size}
+Gradient descent performs updates
+\[
+x_{k+1} = x_k - \eta \nabla f(x_k).
+\]
+To ensure that the method is a descent method (i.e.\ \( f(x_{k+1}) < f(x_k) \)), the step-size must satisfy
+\[
+\boxed{\,0 < \eta < \frac{2}{L}\,}.
+\]
+
+% ------------------------------------------------------------
+\subsubsection*{Derivation via Smoothness Inequality}
+If \(f\) has an \(L\)-Lipschitz gradient, then for all \(x,y\):
+\[
+f(y) \le f(x) + \nabla f(x)^\top (y-x)
+    + \frac{L}{2}\|y-x\|^2.
+\]
+Choosing \(y = x - \eta \nabla f(x)\) yields
+\[
+f(x_{k+1}) \le f(x_k)
+        - \eta\left(1 - \frac{L\eta}{2}\right)
+          \|\nabla f(x_k)\|^2.
+\]
+Descent requires
+\[
+1 - \frac{L\eta}{2} > 0
+\quad\Longleftrightarrow\quad
+0 < \eta < \frac{2}{L}.
+\]
+Thus
+\[
+\boxed{
+\text{Maximum curvature } L \text{ limits the stable step-size.}
+}
+\]
+
+% ------------------------------------------------------------
+\subsubsection*{Geometric Interpretation}
+High curvature (sharp bowl):
+\begin{itemize}
+    \item Slope changes rapidly.
+    \item Large steps overshoot.
+    \item Small step-size required.
+\end{itemize}
+
+Low curvature (flat bowl):
+\begin{itemize}
+    \item Slope changes slowly.
+    \item Larger safe step-size.
+\end{itemize}
+
+\[
+\boxed{\text{Sharper curvature}\ \Rightarrow\ \text{smaller steps required}.}
+\]
+
+% ------------------------------------------------------------
+\subsubsection*{Eigenvalue View (Quadratic Functions)}
+For the quadratic model
+\[
+f(x) = \tfrac12 x^\top A x,
+\qquad A \succ 0,
+\]
+gradient descent satisfies
+\[
+e_{k+1,i} = (1 - \eta \lambda_i)\, e_{k,i}
+\]
+in each eigen-direction of \(A\).
+
+Convergence requires
+\[
+|1 - \eta\lambda_i| < 1
+\quad\Longleftrightarrow\quad
+0 < \eta < \frac{2}{\lambda_i}.
+\]
+
+The worst-case direction uses the largest eigenvalue \(L=\lambda_{\max}\):
+\[
+\boxed{\,0 < \eta < \frac{2}{L}\,}.
+\]
+
+Thus high curvature (large eigenvalue) forces smaller learning rates.
+
+% ------------------------------------------------------------
+\subsubsection*{Summary}
+\begin{itemize}
+    \item Curvature = eigenvalues of Hessian.
+    \item \(L = \lambda_{\max}(H)\) governs smoothness.
+    \item Gradient descent requires
+    \[
+    0 < \eta < \frac{2}{L}.
+    \]
+    \item Larger curvature \(\Rightarrow\) smaller steps needed.
+    \item Smaller curvature \(\Rightarrow\) larger steps possible.
+\end{itemize}
+
+\[
+\boxed{
+\textbf{Curvature directly determines the stability of gradient descent.}
+}
+\]
+
+% ============================================================
+
+\end{multicols}
+
+\chapter{Gradient Descent for Linear and Logistic Regression}
+% ============================================================
+\begin{multicols}{2}
+\section{Derivation of GD}
+
+\subsection{Gradient Descent for Linear Regression}
+
+We derive gradient–descent updates for linear regression (with bias), including
+batch GD, SGD, and the augmented (bias-absorbed) form. We also include the
+L\(_2\)-regularized (ridge) variant.
+
+% ------------------------------------------------------------
+\subsubsection{Problem Setup (MSE Objective)}
+
+Let
+\[
+X\in\mathbb{R}^{N\times d},\quad y\in\mathbb{R}^N,
+\qquad
+w\in\mathbb{R}^d,\ b\in\mathbb{R}.
+\]
+Predictions:
+\[
+\hat y_n = w^\top x_n + b,\qquad
+r := Xw + b\mathbf{1} - y.
+\]
+Mean–squared error (using the standard factor \(1/(2N)\)):
+\[
+J(w,b)
+=
+\frac{1}{2N}\sum_{n=1}^N (w^\top x_n + b - y_n)^2
+=
+\frac{1}{2N}\|Xw + b\mathbf{1} - y\|^2.
+\]
+
+% ------------------------------------------------------------
+\subsubsection{Gradients}
+
+\paragraph{Gradient w.r.t.\ \(w\).}
+\[
+\nabla_w J
+=
+\frac{1}{N}X^\top (Xw + b\mathbf{1} - y)
+=
+\frac{1}{N} X^\top r.
+\]
+
+\paragraph{Gradient w.r.t.\ \(b\).}
+\[
+\partial_b J
+=
+\frac{1}{N}\mathbf{1}^\top (Xw + b\mathbf{1} - y)
+=
+\frac{1}{N}\mathbf{1}^\top r.
+\]
+
+% ------------------------------------------------------------
+\subsubsection{Batch Gradient Descent (Full Gradient)}
+
+\[
+\boxed{
+w \leftarrow w - \eta\,\frac{1}{N}X^\top r,
+\qquad
+b \leftarrow b - \eta\,\frac{1}{N}\mathbf{1}^\top r.
+}
+\]
+
+% ------------------------------------------------------------
+\subsubsection{Stochastic Gradient Descent (Per-example)}
+
+For a single sample \((x_i,y_i)\), residual \(r_i = w^\top x_i + b - y_i\),
+\[
+\boxed{
+w \leftarrow w - \eta\, r_i\, x_i,
+\qquad
+b \leftarrow b - \eta\, r_i.
+}
+\]
+
+For a minibatch \(B\), replace \(r_i x_i\) by \(\frac{1}{|B|}\sum_{n\in B} r_n x_n\).
+
+% ------------------------------------------------------------
+\subsubsection{Augmented (Bias-Absorbed) Form}
+
+Augment features with a constant \(1\):
+\[
+\tilde X = [\,X\ \ \mathbf{1}\,]\in\mathbb{R}^{N\times(d+1)},
+\qquad
+\tilde w = \begin{bmatrix} w \\ b \end{bmatrix}.
+\]
+Objective:
+\[
+J(\tilde w) = \frac{1}{2N}\|\tilde X\tilde w - y\|^2.
+\]
+Gradient:
+\[
+\nabla_{\tilde w} J = \frac{1}{N}\tilde X^\top(\tilde X\tilde w - y).
+\]
+Batch GD update:
+\[
+\boxed{
+\tilde w \leftarrow \tilde w - \eta\,\frac{1}{N}\tilde X^\top(\tilde X\tilde w - y).
+}
+\]
+SGD step (single sample \(\tilde x_i\)):
+\[
+\boxed{
+\tilde w \leftarrow \tilde w - \eta\, r_i\, \tilde x_i.
+}
+\]
+
+% ------------------------------------------------------------
+\subsubsection{L\(_2\)-Regularized Variant (Ridge Regression)}
+
+Add \(\frac{\lambda}{2}\|w\|^2\) (bias not regularized):
+\[
+J_\lambda(w,b)
+=
+\frac{1}{2N}\|Xw+b\mathbf{1}-y\|^2 + \frac{\lambda}{2}\|w\|^2.
+\]
+Gradients:
+\[
+\nabla_w J_\lambda = \frac{1}{N}X^\top r + \lambda w,
+\qquad
+\partial_b J_\lambda = \frac{1}{N}\mathbf{1}^\top r.
+\]
+Updates:
+\[
+\boxed{
+w \leftarrow w - \eta\left(\frac{1}{N}X^\top r + \lambda w\right),
+\qquad
+b \leftarrow b - \eta\,\frac{1}{N}\mathbf{1}^\top r.
+}
+\]
+
+% ------------------------------------------------------------
+\subsubsection{Numerical Notes}
+
+\begin{itemize}
+    \item Compute the residual \(r\) once per batch for efficiency.
+    \item Batch update costs \(O(Nd)\).
+    \item For large \(N\), use minibatches or SGD.
+    \item Closed form solution:
+    \[
+    w = (X^\top X)^{-1}X^\top y
+    \]
+    (or ridge variant) is exact when invertible and often faster for small/medium problems.
+\end{itemize}
+
+% ============================================================
+\subsection{Gradient Descent and Convexity for Logistic Regression}
+
+\subsubsection{Model and Loss}
+
+For data
+\[
+X\in\mathbb{R}^{N\times d},\qquad y\in\{0,1\}^N,
+\]
+parameters \(w\in\mathbb{R}^d\), \(b\in\mathbb{R}\), define
+\[
+z = Xw + b\mathbf{1},\qquad p=\sigma(z),\qquad p_n=\frac{1}{1+e^{-z_n}}.
+\]
+Negative log-likelihood:
+\[
+\mathcal L_{\mathrm{NLL}}(w,b)
+=
+- \sum_{n=1}^N \big[ y_n\log p_n + (1-y_n)\log(1-p_n)\big].
+\]
+L\(_2\)-regularized version (no penalty on \(b\)):
+\[
+\mathcal L_\lambda(w,b)=\mathcal L_{\mathrm{NLL}}(w,b)+\frac{\lambda}{2}\|w\|^2.
+\]
+
+% ------------------------------------------------------------
+\subsubsection{Gradient (Component and Vector Forms)}
+
+Using \(\sigma'(z_n)=p_n(1-p_n)\), the per-example derivative is
+\[
+\frac{\partial \ell_n}{\partial z_n}=p_n-y_n.
+\]
+Stacked vector form:
+\[
+\nabla_z \mathcal L_{\mathrm{NLL}} = p-y.
+\]
+By the chain rule for \(z=Xw+b\mathbf{1}\),
+\[
+\nabla_w \mathcal L_{\mathrm{NLL}}=X^\top(p-y),\qquad
+\partial_b \mathcal L_{\mathrm{NLL}}=\mathbf{1}^\top(p-y).
+\]
+With L\(_2\) regularization:
+\[
+\nabla_w \mathcal L_\lambda = X^\top(p-y)+\lambda w,
+\qquad
+\partial_b \mathcal L_\lambda = \mathbf{1}^\top(p-y).
+\]
+
+% ------------------------------------------------------------
+\subsubsection{Gradient Descent Updates}
+
+Let learning rate \(\eta>0\).
+
+\paragraph{Unregularized GD.}
+\[
+\boxed{
+w^{(t+1)} = w^{(t)} - \eta\, X^\top\big(\sigma(Xw^{(t)} + b^{(t)}\mathbf{1}) - y\big)
+}
+\]
+\[
+\boxed{
+b^{(t+1)} = b^{(t)} - \eta\, \mathbf{1}^\top\big(\sigma(Xw^{(t)} + b^{(t)}\mathbf{1}) - y\big)
+}
+\]
+
+\paragraph{L\(_2\)-regularized GD.}
+\[
+\boxed{
+w^{(t+1)} = w^{(t)} - \eta\Big( X^\top(\sigma(Xw^{(t)}+b^{(t)}\mathbf{1})-y)
++ \lambda w^{(t)}\Big)
+}
+\]
+\[
+\boxed{
+b^{(t+1)} = b^{(t)} - \eta\, \mathbf{1}^\top\big(\sigma(Xw^{(t)} + b^{(t)}\mathbf{1}) - y\big)
+}
+\]
+
+\paragraph{Augmented Compact Form.}
+Let
+\[
+\tilde X=[\,X\ \mathbf{1}\,],\qquad
+\tilde w = \begin{bmatrix}w\\ b\end{bmatrix}.
+\]
+Then
+\[
+\tilde w^{(t+1)}
+=
+\tilde w^{(t)}
+-
+\eta\, \tilde X^\top\big(\sigma(\tilde X\tilde w^{(t)}) - y\big).
+\]
+
+% ------------------------------------------------------------
+\subsubsection{Convexity via the Hessian}
+
+Let \(R=\operatorname{diag}(p_n(1-p_n)) \succeq 0\).  
+The Hessian w.r.t.\ the augmented parameter \(\tilde w\) is
+\[
+\nabla^2_{\tilde w}\mathcal L_{\mathrm{NLL}}
+=
+\tilde X^\top R \tilde X.
+\]
+For any \(v\in\mathbb{R}^{d+1}\),
+\[
+v^\top \tilde X^\top R\tilde X v
+=
+(\tilde X v)^\top R (\tilde X v)
+=
+\sum_{n=1}^N p_n(1-p_n)(\tilde x_n^\top v)^2
+\ge 0.
+\]
+Hence \(\mathcal L_{\mathrm{NLL}}\) is convex.
+
+With L\(_2\) regularization,
+\[
+\nabla_w^2 \mathcal L_\lambda = X^\top R X + \lambda I_d \succ 0 \quad(\lambda>0),
+\]
+so the loss becomes **strictly convex** and has a unique minimizer.
+
+% ------------------------------------------------------------
+\subsubsection{Strict Convexity and Degeneracies}
+
+\begin{itemize}
+    \item Without regularization, strict convexity may fail if \(X\) is rank-deficient or if some \(p_n(1-p_n)=0\).
+    \item With \(\lambda>0\), strict convexity is always ensured.
+    \item For linearly separable data, the unregularized logistic loss has no finite minimizer (weights diverge).
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsubsection{Summary}
+
+\[
+\boxed{
+\nabla_w\mathcal L = X^\top(\sigma(Xw+b\mathbf{1})-y),
+\qquad
+\partial_b\mathcal L = \mathbf{1}^\top(\sigma(Xw+b\mathbf{1})-y)
+}
+\]
+\[
+\boxed{
+\text{Hessian } = \tilde X^\top R \tilde X \succeq 0\ \Rightarrow\ \text{convex};
+\quad
+\lambda>0\Rightarrow\text{strictly convex}.
+}
+\]
+
+
+% ============================================================
+\section{Convergence Proof}
+% ============================================================
+\subsection{Linear (Geometric) Convergence of Gradient Descent}
+\label{subsec:gd-linear-conv}
+
+\paragraph{Assumptions.}
+Let \(f:\mathbb{R}^d\to\mathbb{R}\) be continuously differentiable and satisfy
+\begin{itemize}
+  \item \(L\)-smoothness (gradient \(L\)-Lipschitz):
+  \[
+    \|\nabla f(x)-\nabla f(y)\| \le L\|x-y\|\quad\forall x,y\in\mathbb{R}^d,
+  \]
+  equivalently
+  \[
+    f(y) \le f(x) + \nabla f(x)^\top (y-x) + \tfrac{L}{2}\|y-x\|^2\quad\forall x,y.
+  \]
+  \item \(\mu\)-strong convexity (\(\mu>0\)):
+  \[
+    f(y) \ge f(x) + \nabla f(x)^\top (y-x) + \tfrac{\mu}{2}\|y-x\|^2\quad\forall x,y.
+  \]
+\end{itemize}
+Under these assumptions \(f\) has a unique minimizer \(x^\star\) with \(\nabla f(x^\star)=0\).
+We analyze standard gradient descent
+\[
+x_{k+1} = x_k - \eta \nabla f(x_k),
+\]
+with a fixed step size \(\eta>0\).
+
+\vspace{2mm}
+\paragraph{Auxiliary inequalities (standard consequences).}
+\begin{enumerate}[label=(\Alph*)]
+  \item \textbf{Smoothness $\Rightarrow$ gradient--to--suboptimality bound.}
+    Minimizing the quadratic upper bound \(u(y)=f(x)+\nabla f(x)^\top(y-x)+\tfrac{L}{2}\|y-x\|^2\)
+    in \(y\) gives \(y=x-\tfrac{1}{L}\nabla f(x)\). Plugging in and comparing with \(f^\star=f(x^\star)\) yields
+    \[
+      f^\star \le f(x) - \frac{1}{2L}\|\nabla f(x)\|^2,
+    \]
+    hence
+    \[
+      \boxed{\ \|\nabla f(x)\|^2 \le 2L\big(f(x)-f^\star\big).\ } \tag{A}
+    \]
+  \item \textbf{Strong convexity $\Rightarrow$ suboptimality controls squared distance.}
+    Put \(y=x^\star\) in the strong-convexity inequality:
+    \[
+      f(x) - f^\star \ge \frac{\mu}{2}\|x-x^\star\|^2,
+    \]
+    i.e.
+    \[
+      \boxed{\ f(x)-f^\star \ge \tfrac{\mu}{2}\|x-x^\star\|^2.\ } \tag{B}
+    \]
+\end{enumerate}
+
+\vspace{2mm}
+\paragraph{Distance contraction (main derivation).}
+Start from the update and expand the squared error:
+\[
+x_{k+1}-x^\star = x_k-x^\star - \eta \nabla f(x_k).
+\]
+Thus
+\begin{align}
+\|x_{k+1}-x^\star\|^2
+&= \|x_k-x^\star\|^2 - 2\eta\,\nabla f(x_k)^\top (x_k-x^\star) + \eta^2\|\nabla f(x_k)\|^2. \tag{1}
+\end{align}
+
+Use strong convexity (apply with \(x\leftarrow x_k\), \(y\leftarrow x^\star\)) which rearranged gives
+\[
+\nabla f(x_k)^\top (x_k-x^\star) \ge f(x_k)-f^\star + \frac{\mu}{2}\|x_k-x^\star\|^2. \tag{2}
+\]
+Plug (2) into (1) to obtain
+\begin{align}
+\|x_{k+1}-x^\star\|^2
+&\le \|x_k-x^\star\|^2
+-2\eta\Big(f(x_k)-f^\star + \tfrac{\mu}{2}\|x_k-x^\star\|^2\Big)
++ \eta^2\|\nabla f(x_k)\|^2 \nonumber\\
+&= (1-\eta\mu)\|x_k-x^\star\|^2 - 2\eta\big(f(x_k)-f^\star\big) + \eta^2\|\nabla f(x_k)\|^2. \tag{3}
+\end{align}
+
+Now upper-bound \(\|\nabla f(x_k)\|^2\) by (A):
+\[
+\|\nabla f(x_k)\|^2 \le 2L\big(f(x_k)-f^\star\big). \tag{4}
+\]
+Substitute (4) into (3):
+\[
+\|x_{k+1}-x^\star\|^2
+\le (1-\eta\mu)\|x_k-x^\star\|^2 + (-2\eta + 2\eta^2 L)\big(f(x_k)-f^\star\big). \tag{5}
+\]
+
+To eliminate the suboptimality term use (B): \(f(x_k)-f^\star \ge \tfrac{\mu}{2}\|x_k-x^\star\|^2\). Plug into (5):
+\begin{align}
+\|x_{k+1}-x^\star\|^2
+&\le (1-\eta\mu)\|x_k-x^\star\|^2 + (-2\eta + 2\eta^2 L)\cdot \tfrac{\mu}{2}\|x_k-x^\star\|^2 \nonumber\\
+&= \big(1 - 2\eta\mu + \eta^2 L\mu\big)\,\|x_k-x^\star\|^2. \tag{6}
+\end{align}
+
+Define
+\[
+q(\eta) := 1 - 2\eta\mu + \eta^2 L\mu.
+\]
+Inequality (6) is
+\[
+\boxed{\ \|x_{k+1}-x^\star\|^2 \le q(\eta)\,\|x_k-x^\star\|^2\ }. \tag{7}
+\]
+
+\vspace{2mm}
+\paragraph{Choosing \(\eta\) and contraction factor.}
+The quadratic \(q(\eta)=1-2\eta\mu+\eta^2 L\mu\) is convex in \(\eta\) and minimized at
+\[
+\eta^\star = \frac{1}{L}.
+\]
+Plug \(\eta=1/L\) into \(q\):
+\[
+q\Big(\tfrac{1}{L}\Big) = 1 - 2\frac{\mu}{L} + \frac{1}{L^2}L\mu = 1 - \frac{\mu}{L}.
+\]
+Since \(0<\mu\le L\) we have \(0<1-\mu/L<1\). Therefore with the canonical choice \(\eta=1/L\) we obtain the clean contraction
+\[
+\boxed{\ \|x_{k+1}-x^\star\|^2 \le \Big(1-\frac{\mu}{L}\Big)\|x_k-x^\star\|^2. \ } \tag{8}
+\]
+Iterating (8) yields for all \(k\ge 0\),
+\[
+\boxed{\ \|x_k-x^\star\|^2 \le \Big(1-\frac{\mu}{L}\Big)^k \|x_0-x^\star\|^2. \ } \tag{9}
+\]
+
+\vspace{2mm}
+\paragraph{Function-value (suboptimality) decay.}
+Use smoothness to relate distance to function value. From \(L\)-smoothness and convexity one has
+\[
+f(x) - f^\star \le \frac{L}{2}\|x-x^\star\|^2.
+\]
+Combining with (9),
+\[
+f(x_k)-f^\star \le \frac{L}{2}\|x_k-x^\star\|^2
+\le \frac{L}{2}\Big(1-\frac{\mu}{L}\Big)^k \|x_0-x^\star\|^2.
+\]
+Hence suboptimality decays geometrically with the same base \(1-\mu/L\). Equivalently,
+\[
+\boxed{\ f(x_k)-f^\star \le \frac{L}{2}\Big(1-\frac{\mu}{L}\Big)^k \|x_0-x^\star\|^2\ }.
+\]
+
+(One can also derive a directly comparable bound of the form
+\(f(x_k)-f^\star \le \big(1-\tfrac{\mu}{L}\big)^k (f(x_0)-f^\star)\) by tracing function decreases; constants vary but the geometric rate \(1-\mu/L\) remains.)
+
+\vspace{2mm}
+\paragraph{Remarks and sharper constants.}
+\begin{itemize}
+  \item The choice \(\eta=1/L\) gives the simple contraction factor \(1-\mu/L\). This is standard and easy to remember.
+  \item A more careful analysis (or spectral analysis for quadratic objectives) shows the optimal constant step-size
+    \(\eta_{\mathrm{opt}} = \dfrac{2}{L+\mu}\) yields a (tighter) contraction factor for squared distance
+    \(\displaystyle \Big(\frac{L-\mu}{L+\mu}\Big)^2\), and for distance itself \(\dfrac{L-\mu}{L+\mu}\).
+    For quadratics this rate is tight.
+  \item The ratio \(\kappa:=L/\mu\) (condition number) controls speed: the closer \(\kappa\) is to \(1\), the faster the convergence.
+\end{itemize}
+
+\vspace{2mm}
+\paragraph{Final concise theorem statement.}
+\begin{theorem}
+Let \(f\) be \(L\)-smooth and \(\mu\)-strongly convex. Run gradient descent with step size \(\eta=1/L\). Then for all \(k\ge0\),
+\[
+\|x_k-x^\star\|^2 \le \Big(1-\frac{\mu}{L}\Big)^k \|x_0-x^\star\|^2,
+\qquad
+f(x_k)-f^\star \le \frac{L}{2}\Big(1-\frac{\mu}{L}\Big)^k \|x_0-x^\star\|^2.
+\]
+Thus GD converges linearly (geometrically) with contraction factor \(1-\mu/L\).
+\end{theorem}
+
+% ============================================================
+\end{multicols}
+
+\chapter{Support Vector Machines} \begin{multicols}{2}
+
+\section{Fundamentals and geometry}
+% ============================================================
+\subsection{Distance From a Point to a Hyperplane}
+\label{subsec:distance-hyperplane}
+
+Let \(x_i \in \mathbb{R}^d\) be a point, and let the hyperplane be
+\[
+H = \{x \in \mathbb{R}^d : w^\top x + b = 0\},
+\]
+where \(w \neq 0\) is the normal vector. We derive the perpendicular distance from \(x_i\) to \(H\) from first principles.
+
+\paragraph{Step 1: Orthogonal projection.}
+Let \(x_i^\perp\) denote the orthogonal projection of \(x_i\) onto \(H\). Then
+\[
+\operatorname{dist}(x_i,H) = \|x_i - x_i^\perp\|.
+\]
+
+\paragraph{Step 2: Parameterization of the projection.}
+Because the difference \(x_i - x_i^\perp\) must be parallel to the normal direction \(w\), there exists a scalar \(\lambda\in\mathbb{R}\) such that
+\[
+x_i^\perp = x_i - \lambda w.
+\]
+
+\paragraph{Step 3: Enforce that \(x_i^\perp\in H\).}
+Use the hyperplane constraint:
+\[
+w^\top x_i^\perp + b = 0.
+\]
+Insert the expression for \(x_i^\perp\):
+\[
+w^\top (x_i - \lambda w) + b = 0
+\quad\Longrightarrow\quad
+w^\top x_i - \lambda\, w^\top w + b = 0.
+\]
+Solve for \(\lambda\):
+\[
+\lambda = \frac{w^\top x_i + b}{\|w\|^2}.
+\]
+
+\paragraph{Step 4: Compute the distance.}
+Since \(x_i - x_i^\perp = \lambda w\), the perpendicular distance is
+\[
+\|x_i - x_i^\perp\|
+   = |\lambda|\,\|w\|
+   = \left|\frac{w^\top x_i + b}{\|w\|^2}\right|\|w\|
+   = \frac{|w^\top x_i + b|}{\|w\|}.
+\]
+
+\paragraph{Final formula.}
+\[
+\boxed{
+\operatorname{dist}(x_i, H)
+= \frac{|w^\top x_i + b|}{\|w\|}
+}
+\]
+
+\paragraph{Signed distance (SVM geometric margin).}
+For labels \(y_i \in \{\pm 1\}\), the signed distance is
+\[
+\boxed{
+\gamma_i
+= y_i\,\frac{w^\top x_i + b}{\|w\|}
+}.
+\]
+
+This quantity is the \emph{geometric margin} used in support vector machine theory.
+
+% ============================================================
+% ============================================================
+\section{Scale Invariance and Supporting Hyperplanes}
+\label{sec:scale-invariance}
+
+We study how rescaling a separating hyperplane affects its functional and geometric margins, and prove that any separating hyperplane with geometric margin $\Gamma>0$ can be rescaled so that its supporting hyperplanes become
+\[
+w^\top x + b = +1,
+\qquad
+w^\top x + b = -1.
+\]
+
+% ------------------------------------------------------------
+\subsection{Margins and Notation}
+
+For labeled data $\{(x_i,y_i)\}_{i=1}^n$ with $y_i\in\{\pm1\}$, consider the hyperplane
+\[
+H := \{x\in\mathbb{R}^d : w^\top x + b = 0\},\qquad w\neq 0.
+\]
+
+\paragraph{Functional margin.}
+\[
+\hat{\gamma}_i(w,b) := y_i\,(w^\top x_i + b),\qquad
+\hat{\gamma}(w,b) := \min_{i}\hat{\gamma}_i(w,b).
+\]
+
+\paragraph{Geometric margin.}
+\[
+\Gamma(w,b)
+:= \min_{i}\frac{\hat{\gamma}_i(w,b)}{\|w\|}
+= \frac{\hat{\gamma}(w,b)}{\|w\|}.
+\]
+
+Assume the data are linearly separable so that $\Gamma(w,b)>0$.
+
+% ------------------------------------------------------------
+\subsection{Points at Distance \texorpdfstring{$\Gamma$}{Gamma} from the Hyperplane}
+
+The signed perpendicular distance from $x$ to $H$ is
+\[
+d(x) = \frac{w^\top x + b}{\|w\|}.
+\]
+
+Thus for a labeled point,
+\[
+\gamma_i(w,b) = y_i\,d(x_i)
+= y_i\frac{w^\top x_i + b}{\|w\|}.
+\]
+
+By definition of the geometric margin, there exists a support index $s$ such that
+\[
+\gamma_s(w,b)=\Gamma
+\quad\Longrightarrow\quad
+y_s(w^\top x_s + b) = \Gamma\,\|w\|.
+\]
+
+Hence any point at geometric distance $\Gamma$ from $H$ satisfies
+\[
+w^\top x + b = \pm \Gamma\,\|w\|.
+\]
+
+% ------------------------------------------------------------
+\subsection{Scale Invariance of the Hyperplane}
+
+For any nonzero scalar $c$, define
+\[
+w' = c w,\qquad b' = c b.
+\]
+
+The hyperplane remains unchanged:
+\[
+\{x: w'^\top x + b'=0\}
+= \{x: c(w^\top x + b)=0\}
+= \{x: w^\top x + b=0\}.
+\]
+
+Under scaling,
+\[
+\hat{\gamma}_i(w',b') = c\,\hat{\gamma}_i(w,b),\qquad
+\|w'\| = |c|\,\|w\|,
+\]
+and for $c>0$,
+\[
+\Gamma(w',b') = \Gamma(w,b).
+\]
+
+Thus scaling leaves the geometric margin invariant while rescaling all functional margins.
+
+% ------------------------------------------------------------
+\subsection{Normalizing to \texorpdfstring{$\pm1$}{+1 and -1}}
+
+From $\hat{\gamma}(w,b)=\Gamma\|w\|$, choose
+\[
+c := \frac{1}{\hat{\gamma}(w,b)}
+= \frac{1}{\Gamma\|w\|}.
+\]
+With $w'=cw$ and $b'=cb$, every support vector $x_s$ satisfies
+\[
+\hat{\gamma}_s(w',b') = 1,
+\quad\Longrightarrow\quad
+y_s(w'^\top x_s + b') = 1.
+\]
+
+Thus
+\[
+w'^\top x_s + b' =
+\begin{cases}
++1, & y_s=+1,\\[4pt]
+-1, & y_s=-1.
+\end{cases}
+\]
+
+All points satisfy $y_i(w'^\top x_i + b')\ge 1$, and the supporting hyperplanes become
+\[
+H_+' := \{x: w'^\top x + b' = +1\},\qquad
+H_-':= \{x: w'^\top x + b' = -1\}.
+\]
+
+% ------------------------------------------------------------
+\subsection{Relation to the Geometric Margin}
+
+The distance between two parallel affine hyperplanes
+\(
+w'^\top x + b' = c_1,\;
+w'^\top x + b' = c_2
+\)
+is
+\[
+\frac{|c_1-c_2|}{\|w'\|}.
+\]
+
+Thus
+\[
+\operatorname{dist}(H_+',H_-')
+= \frac{|(+1)-(-1)|}{\|w'\|}
+= \frac{2}{\|w'\|}.
+\]
+
+The half-margin is therefore
+\[
+\frac{1}{\|w'\|}
+= \Gamma,
+\]
+since $\|w'\| = 1/\Gamma$ under the chosen normalization.
+
+Hence points previously at geometric distance $\Gamma$ now lie exactly on the hyperplanes $w'^\top x + b' = \pm1$.
+
+% ------------------------------------------------------------
+\subsection{Summary}
+
+\begin{itemize}
+    \item Scaling $(w,b)$ by any positive constant does not change the decision boundary.
+    \item The geometric margin is invariant under such scaling.
+    \item By choosing $c=1/(\Gamma\|w\|)$, we enforce the minimum functional margin to equal $1$.
+    \item Under this normalization, the supporting hyperplanes become
+    \[
+    w^\top x + b = +1,\qquad w^\top x + b = -1,
+    \]
+    and they lie at geometric distance $\Gamma$ from the decision boundary.
+\end{itemize}
+
+% ============================================================
+% ============================================================
+\subsection{Derivation of the SVM Objective (Hard-Margin Primal)}
+
+We begin from the geometric-margin maximization problem.  
+Dataset $\{(x_i,y_i)\}_{i=1}^n$, $y_i\in\{\pm1\}$, classifier $(w,b)\in\mathbb{R}^d\times\mathbb{R}$.
+
+\paragraph{Functional margin}
+\[
+\hat\gamma(w,b) := \min_{i} y_i (w^\top x_i + b).
+\]
+
+\paragraph{Geometric margin}
+\[
+\Gamma(w,b) := \frac{\hat\gamma(w,b)}{\|w\|}.
+\]
+
+\paragraph{Original problem}
+\[
+\max_{w,b}\ \Gamma(w,b)
+= \max_{w,b}\ \frac{\hat\gamma(w,b)}{\|w\|}.
+\tag{1}
+\]
+
+\subsubsection*{Normalization (remove scale invariance)}
+For any $c>0$:
+\[
+\hat\gamma(cw,cb)=c\,\hat\gamma(w,b),\qquad
+\|cw\|=c\|w\|,
+\]
+hence $\Gamma(cw,cb)=\Gamma(w,b)$.
+
+Normalize via
+\[
+\hat\gamma(w,b)=1.
+\tag{2}
+\]
+Then
+\[
+\max_{w,b} \frac{\hat\gamma(w,b)}{\|w\|}
+\Longleftrightarrow
+\max_{\hat\gamma(w,b)=1} \frac{1}{\|w\|}.
+\tag{3}
+\]
+
+\subsubsection*{Inequality form}
+$\hat\gamma(w,b)=1$ is equivalent to
+\[
+y_i(w^\top x_i + b)\ge 1,\qquad i=1,\dots,n,
+\tag{4}
+\]
+with at least one active constraint.
+
+Thus
+\[
+\max_{w,b}\frac{1}{\|w\|}
+\quad\text{s.t.}\quad
+y_i(w^\top x_i+b)\ge1.
+\tag{4'}
+\]
+
+\subsubsection*{Monotone transformation of objective}
+Maximize $1/\|w\|$  
+$\Longleftrightarrow$ minimize $\|w\|$  
+$\Longleftrightarrow$ minimize $\tfrac12\|w\|^2$.
+
+Hence the problem becomes
+\[
+\boxed{
+\min_{w,b}\ \tfrac12\|w\|^2
+\quad\text{s.t.}\quad
+y_i(w^\top x_i+b)\ge 1,\ i=1,\dots,n.
+}
+\tag{P}
+\]
+
+\subsubsection*{Incorrect sign check}
+For any feasible $(w,b)$ and any $t>1$, $(tw,tb)$ is feasible:
+\[
+y_i((tw)^\top x_i + tb)=t\,y_i(w^\top x_i+b)\ge t.
+\]
+But
+\[
+\tfrac12\|tw\|^2 = \tfrac12 t^2\|w\|^2 \to \infty.
+\]
+Therefore
+\[
+\max\ \tfrac12\|w\|^2
+\quad\text{is unbounded and not equivalent}.
+\]
+
+\subsubsection*{Final equivalence chain}
+\[
+\begin{aligned}
+&\max\limits_{w,b}\min_i y_i\frac{w^\top x_i+b}{\|w\|}
+\Longleftrightarrow
+\max\frac{\hat\gamma(w,b)}{\|w\|}
+\Longleftrightarrow
+\max_{\hat\gamma=1}\frac{1}{\|w\|}
+\\
+&\Longleftrightarrow
+\max_{y_i(w^\top x_i+b)\ge1}\frac{1}{\|w\|}
+\Longleftrightarrow
+\min_{y_i(w^\top x_i+b)\ge1}\|w\|
+\Longleftrightarrow
+\min_{y_i(w^\top x_i+b)\ge1}\tfrac12\|w\|^2.
+\end{aligned}
+\]
+
+\subsection{Lagrangian and stationarity}
+
+Primal (hard-margin SVM):
+\[
+\begin{aligned}
+\min_{w\in\mathbb{R}^d,\; b\in\mathbb{R}}\quad & \tfrac{1}{2}\|w\|^2\\[4pt]
+\text{s.t.}\quad & y_i\big(w^\top x_i + b\big) \ge 1,\qquad i=1,\dots,n.
+\end{aligned}
+\]
+
+Define constraint functions
+\[
+g_i(w,b):=1 - y_i\big(w^\top x_i + b\big)\le 0,\qquad i=1,\dots,n,
+\]
+and Lagrange multipliers \(\alpha_i\ge0\).
+
+Lagrangian:
+\[
+\mathcal{L}(w,b,\alpha)
+= \tfrac{1}{2}w^\top w + \sum_{i=1}^n \alpha_i\big(1 - y_i(w^\top x_i + b)\big).
+\]
+
+Stationarity (set partial derivatives w.r.t.\ primal variables to zero):
+
+\paragraph{w:}
+\[
+\frac{\partial \mathcal{L}}{\partial w}
+= w - \sum_{i=1}^n \alpha_i y_i x_i = 0
+\quad\Longrightarrow\quad
+\boxed{\,w = \sum_{i=1}^n \alpha_i y_i x_i\,.}
+\]
+
+\paragraph{b:}
+\[
+\frac{\partial \mathcal{L}}{\partial b}
+= -\sum_{i=1}^n \alpha_i y_i = 0
+\quad\Longrightarrow\quad
+\boxed{\,\sum_{i=1}^n \alpha_i y_i = 0\,.}
+\]
+
+Constraints on dual variables:
+\[
+\alpha_i \ge 0,\qquad i=1,\dots,n.
+\]
+
+(End of subsection: Lagrangian defined and stationarity conditions derived.)
+\subsection{Dual form of the Lagrangian — derivation}
+
+% One-line setup
+Primal Lagrangian (repeated for clarity):
+\[
+\mathcal{L}(w,b,\alpha)
+= \tfrac{1}{2}w^\top w + \sum_{i=1}^n \alpha_i
+\big(1 - y_i(w^\top x_i + b)\big),\qquad \alpha_i\ge0.
+\]
+
+% Step 1: collect w and b terms
+Collect terms in \(\mathcal{L}\):
+\[
+\begin{aligned}
+\mathcal{L}(w,b,\alpha)
+&= \tfrac{1}{2}w^\top w + \sum_{i=1}^n \alpha_i
+- \sum_{i=1}^n \alpha_i y_i w^\top x_i - b\sum_{i=1}^n \alpha_i y_i\\[4pt]
+&= \tfrac{1}{2}w^\top w - w^\top\Big(\sum_{i=1}^n \alpha_i y_i x_i\Big)
++ \sum_{i=1}^n \alpha_i - b\sum_{i=1}^n \alpha_i y_i.
+\end{aligned}
+\]
+
+% Step 2: dual function = inf_{w,b} L
+Dual function definition:
+\[
+d(\alpha)\;:=\;\inf_{w,b}\ \mathcal{L}(w,b,\alpha).
+\]
+
+% Minimize over b (linear term)
+Minimization over \(b\): the term \(-b\sum_i\alpha_i y_i\) is finite iff
+\(\sum_{i=1}^n \alpha_i y_i = 0\). Enforce this equality (otherwise \(d(\alpha)=-\infty\)).
+Thus impose constraint
+\[
+\sum_{i=1}^n \alpha_i y_i = 0.
+\]
+
+% Minimize over w (quadratic)
+Minimization over \(w\): for fixed \(\alpha\) (and under the b-constraint),
+\[
+\mathcal{L}(w,\alpha)=\tfrac{1}{2}w^\top w - w^\top s + \sum_{i=1}^n \alpha_i,
+\qquad s := \sum_{i=1}^n \alpha_i y_i x_i.
+\]
+This is a convex quadratic in \(w\). Stationarity \(\nabla_w\mathcal{L}=0\) gives \(w=s\).
+Substitute \(w=s\) to obtain the minimal value:
+\[
+\inf_w\Big(\tfrac{1}{2}w^\top w - w^\top s\Big)
+= \tfrac{1}{2}s^\top s - s^\top s = -\tfrac{1}{2}s^\top s.
+\]
+
+% Express s^T s
+Compute \(s^\top s\):
+\[
+s^\top s = \Big(\sum_{i=1}^n \alpha_i y_i x_i\Big)^\top
+\Big(\sum_{j=1}^n \alpha_j y_j x_j\Big)
+= \sum_{i=1}^n\sum_{j=1}^n \alpha_i\alpha_j y_i y_j\, x_i^\top x_j.
+\]
+
+% Final dual function
+Therefore, under the constraints \(\alpha_i\ge0\) and \(\sum_i\alpha_i y_i=0\),
+\[
+\boxed{%
+d(\alpha) \;=\; \sum_{i=1}^n \alpha_i \;-\; \tfrac{1}{2}\sum_{i=1}^n\sum_{j=1}^n
+\alpha_i\alpha_j y_i y_j\, x_i^\top x_j.}
+\]
+
+% Dual optimization problem
+Dual problem (concise):
+\[
+\begin{aligned}
+\max_{\alpha\in\mathbb{R}^n}\quad &\; \sum_{i=1}^n \alpha_i
+\;-\; \tfrac{1}{2}\sum_{i=1}^n\sum_{j=1}^n \alpha_i\alpha_j y_i y_j\, x_i^\top x_j\\[4pt]
+\text{s.t.}\quad &\; \alpha_i \ge 0,\quad i=1,\dots,n,\\
+&\; \sum_{i=1}^n \alpha_i y_i = 0.
+\end{aligned}
+\]
+
+% Short note on relation to primal
+Note: primal variable recovery uses stationarity \(w=\sum_i \alpha_i y_i x_i\) and any support
+index \(s\) with \(\alpha_s>0\) gives \(b = y_s - w^\top x_s\).
+
+
+% ============================================================
+% ============================================================
+% ============================================================
+\section*{Soft Margin Support Vector Machines}
+
+% ------------------------------------------------------------
+\begin{formula}[Soft-Margin Primal Objective]
+\begin{align*}
+\min_{\mathbf{w},b,\boldsymbol{\xi}}\quad & \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^N \xi_i \\[4pt]
+\text{s.t.}\quad & y_i\big(\mathbf{w}^\top \mathbf{x}_i + b\big) \ge 1 - \xi_i,\quad i=1,\dots,N, \\[4pt]
+& \xi_i \ge 0,\quad i=1,\dots,N.
+\end{align*}
+\end{formula}
+% ------------------------------------------------------------
+
+\subsection*{A. Interpretation of the Slack Variable $\xi_i$}
+From the constraints $y_i(\mathbf{w}^\top \mathbf{x}_i + b) \ge 1-\xi_i$ and $\xi_i\ge0$:
+\begin{itemize}
+    \item If $\xi_i = 0$, then $y_i(\mathbf{w}^\top \mathbf{x}_i + b)\ge 1$. The point $\mathbf{x}_i$ is outside or on the margin (correctly classified, margin $\ge 1$).
+    \item If $0<\xi_i<1$, then $0 < y_i(\mathbf{w}^\top \mathbf{x}_i + b) < 1$. The point is correctly classified but lies \emph{inside} the margin (margin violated).
+    \item If $\xi_i \ge 1$, then $y_i(\mathbf{w}^\top \mathbf{x}_i + b) \le 1-\xi_i \le 0$. The point is misclassified.
+\end{itemize}
+$\xi_i$ is a nonnegative measure of margin violation.
+
+\subsection*{B. Slack Equals Hinge Loss at Optimality}
+For a fixed $(\mathbf{w},b)$, the smallest feasible $\xi_i$ satisfying the two inequalities is:
+\[
+\xi_i^\star(\mathbf{w},b) = \max\{0, 1 - y_i(\mathbf{w}^\top \mathbf{x}_i + b)\}.
+\]
+Substituting this back into the primal objective eliminates $\boldsymbol{\xi}$ and yields the unconstrained hinge-loss formulation:
+\[
+\min_{\mathbf{w},b}\ \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^N \max\big(0, 1 - y_i(\mathbf{w}^\top \mathbf{x}_i + b)\big).
+\]
+Thus, at optimality, the slack $\xi_i$ is precisely the hinge loss for that point: $\xi_i = \ell_{\text{hinge}}(y_i f(\mathbf{x}_i))$.
+
+\subsection*{C. Meaning of the Parameter $C$}
+The scalar $C>0$ balances $\frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i}\xi_i$.
+\begin{enumerate}
+    \item \textbf{Trade-off parameter:} $C$ balances margin maximization (minimizing $\|\mathbf{w}\|$) against minimizing total margin violation (minimizing $\sum \xi_i$).
+    \item \textbf{Loss vs. regularization weight:} In the hinge-loss view, $C$ is the multiplier for the empirical loss.
+    \begin{itemize}
+        \item \textbf{Large $C$}: Prioritizes empirical loss (fit data, small $\sum \xi_i$), even at the cost of a narrower margin (larger $\|\mathbf{w}\|$). Risks overfitting.
+        \item \textbf{Small $C$}: Prioritizes regularization (wider margin, small $\|\mathbf{w}\|$), even if it means allowing larger violations. Risks underfitting.
+    \end{itemize}
+    \item \textbf{Dual interpretation:} In the dual problem, the multipliers $\alpha_i$ are constrained by $0 \le \alpha_i \le C$. $C$ acts as an upper bound on the influence any single training point can have on the solution.
+    \item \textbf{Relationship to $\lambda$:} Some texts use $\min \frac{\lambda}{2}\|\mathbf{w}\|^2 + \frac{1}{N}\sum \ell_{\text{hinge}}$. $C$ and $\lambda$ are inversely related (e.g., $C = 1/(N\lambda)$). A big $C$ corresponds to a small $\lambda$ (weak regularization).
+\end{enumerate}
+
+\subsection*{D. The Margin vs. Misclassification Trade-off}
+The optimizer chooses $(\mathbf{w}, b, \boldsymbol{\xi})$ to minimize the weighted sum $J = \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^N \xi_i$.
+\begin{enumerate}
+    \item $C \to \infty$: Violations are punished infinitely. If data is separable, the solution converges to the hard-margin SVM.
+    \item $C \to 0^+$: Violations are almost free. The optimizer only minimizes $\|\mathbf{w}\|$, leading to $\mathbf{w} \approx \mathbf{0}$ (maximum margin), ignoring the data entirely.
+    \item Finite $C$: A balance is struck. Increasing $C$ leads to smaller $\sum \xi_i$ (fewer violations) at the cost of a larger $\|\mathbf{w}\|$ (narrower margin).
+\end{enumerate}
+\paragraph{KKT Analysis:}
+The Lagrangian is:
+\[
+\mathcal{L}=\tfrac{1}{2}\|\mathbf{w}\|^2 + C\sum_i\xi_i - \sum_i \alpha_i(y_i(\mathbf{w}^\top \mathbf{x}_i + b) - 1 + \xi_i) - \sum_i \mu_i \xi_i
+\]
+where $\alpha_i \ge 0$ and $\mu_i \ge 0$.
+Stationarity w.r.t.\ $\xi_i$ yields:
+\[
+\frac{\partial\mathcal{L}}{\partial \xi_i} = C - \alpha_i - \mu_i = 0 \quad\Rightarrow\quad \alpha_i + \mu_i = C
+\]
+Since $\mu_i \ge 0$, this immediately implies the box constraint $0 \le \alpha_i \le C$.
+The KKT complementary slackness conditions are:
+\[
+\alpha_i\big(y_i(\mathbf{w}^\top \mathbf{x}_i + b) - 1 + \xi_i\big) = 0 \quad \text{and} \quad \mu_i \xi_i = 0
+\]
+These equations define the role of every data point:
+\begin{itemize}
+    \item $\alpha_i = 0$: Then $\mu_i = C > 0$, which forces $\xi_i = 0$. The $\alpha_i$ condition implies $y_i(\mathbf{w}^\top \mathbf{x}_i + b) \ge 1$. Point is correctly classified and outside the margin.
+    \item $0 < \alpha_i < C$: Then $\mu_i = C-\alpha_i > 0$, which forces $\xi_i = 0$. The $\alpha_i$ condition forces $y_i(\mathbf{w}^\top \mathbf{x}_i + b) = 1$. Point is a support vector exactly on the margin.
+    \item $\alpha_i = C$: Then $\mu_i = 0$, so $\xi_i$ is free to be $\ge 0$. The $\alpha_i$ condition forces $y_i(\mathbf{w}^\top \mathbf{x}_i + b) = 1 - \xi_i$. Point is a margin-violator, either inside the margin ($\xi_i < 1$) or misclassified ($\xi_i \ge 1$).
+\end{itemize}
+
+\subsection*{E. Concrete Numeric/Logic Summary}
+\begin{itemize}
+    \item $\xi_i = 0 \Leftrightarrow$ point is correct and on or outside margin.
+    \item $0 < \xi_i < 1 \Leftrightarrow$ point is correct but inside margin.
+    \item $\xi_i \ge 1 \Leftrightarrow$ point is misclassified.
+    \item Larger $C \to$ fewer/smaller violations $\to$ fits training data more (overfit risk).
+    \item Smaller $C \to$ allows violations $\to$ keeps $\|\mathbf{w}\|$ small (underfit risk).
+\end{itemize}
+
+\subsection*{Final Compact Takeaway}
+\begin{itemize}
+    \item Slack $\xi_i$ measures how much the $i$-th point violates the desired margin of 1. It equals the hinge loss value for that point at optimality.
+    \item Parameter $C$ controls the penalty for violations; it is the trade-off knob between margin size (model complexity) and misclassification (training error).
+\end{itemize}
+
+% ============================================================
+\subsection*{Derivation of the Soft-Margin Lagrangian}
+
+We start with the soft-margin primal problem:
+\begin{align*}
+\min_{\mathbf{w},b,\boldsymbol{\xi}}\quad & \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^N \xi_i \\[4pt]
+\text{s.t.}\quad & y_i\big(\mathbf{w}^\top \mathbf{x}_i + b\big) \ge 1 - \xi_i,\quad i=1,\dots,N, \\[4pt]
+& \xi_i \ge 0,\quad i=1,\dots,N.
+\end{align*}
+We write the constraints in the canonical form $g_i(\cdot) \le 0$:
+\begin{align*}
+g_i(\mathbf{w},b,\xi) &:= 1 - \xi_i - y_i(\mathbf{w}^\top \mathbf{x}_i + b) \le 0 \\
+h_i(\mathbf{w},b,\xi) &:= -\xi_i \le 0
+\end{align*}
+Introduce Lagrange multipliers $\alpha_i \ge 0$ for $g_i$ and $\mu_i \ge 0$ for $h_i$. The Lagrangian $\mathcal{L}$ is:
+\[
+\mathcal{L}(\mathbf{w},b,\boldsymbol{\xi},\boldsymbol{\alpha},\boldsymbol{\mu})
+= \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^N \xi_i
++ \sum_{i=1}^N \alpha_i\big(1 - \xi_i - y_i(\mathbf{w}^\top \mathbf{x}_i + b)\big)
+- \sum_{i=1}^N \mu_i \xi_i
+\]
+Expand and collect terms:
+\begin{align*}
+\mathcal{L}
+&= \frac{1}{2} \mathbf{w}^\top \mathbf{w}
++ C\sum_{i=1}^N \xi_i
++ \sum_{i=1}^N \alpha_i
+- \sum_{i=1}^N \alpha_i \xi_i
+- \sum_{i=1}^N \alpha_i y_i \mathbf{w}^\top \mathbf{x}_i
+- b\sum_{i=1}^N \alpha_i y_i
+- \sum_{i=1}^N \mu_i \xi_i \\[6pt]
+% Grouped terms
+&= \frac{1}{2} \mathbf{w}^\top \mathbf{w}
+- \mathbf{w}^\top\Big(\sum_{i=1}^N \alpha_i y_i \mathbf{x}_i\Big)
+- b\Big(\sum_{i=1}^N \alpha_i y_i\Big)
++ \sum_{i=1}^N \alpha_i
++ \sum_{i=1}^N \xi_i\big(C - \alpha_i - \mu_i\big)
+\end{align*}
+% ============================================================
+% ============================================================
+
+
+  
+\end{multicols}
 \end{document}

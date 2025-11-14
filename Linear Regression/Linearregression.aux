@@ -133,4 +133,83 @@
 \@writefile{toc}{\contentsline {paragraph}{Step 1: Compute softmax.}{23}{subsection.3.15.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Step 2: Gradient w.r.t.\ logits.}{23}{subsection.3.15.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Step 3: Gradient w.r.t.\ weights (for this single example).}{23}{subsection.3.15.5}\protected@file@percent }
-\gdef \@abspage@last{23}
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}Gradient Descent}{24}{chapter.4}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}Descent}{24}{section.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.1}1. Gradient Descent as a Descent Method}{24}{subsection.4.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.2}2. Meaning of the Lipschitz Constant \(L\)}{24}{subsection.4.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.3}3. Values of \(L\) in Common ML Models}{24}{subsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{(A) Linear Regression}{24}{subsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{(B) Logistic Regression}{24}{subsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{(C) Softmax Regression}{24}{subsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.4}4. Importance of \(L\)}{25}{subsection.4.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.5}5. Summary}{25}{subsection.4.1.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.6}Convergence for Quadratic Functions}{25}{subsection.4.1.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.7}Convergence and Hessian}{26}{subsection.4.1.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {5}Gradient Descent for Linear and Logistic Regression}{27}{chapter.5}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}Derivation of GD}{27}{section.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.1}Gradient Descent for Linear Regression}{27}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Problem Setup (MSE Objective)}{27}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Gradients}{27}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Gradient w.r.t.\ \(w\).}{27}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Gradient w.r.t.\ \(b\).}{27}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Batch Gradient Descent (Full Gradient)}{27}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Stochastic Gradient Descent (Per-example)}{27}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Augmented (Bias-Absorbed) Form}{27}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{L\(_2\)-Regularized Variant (Ridge Regression)}{27}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Numerical Notes}{28}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.2}Gradient Descent and Convexity for Logistic Regression}{28}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Model and Loss}{28}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Gradient (Component and Vector Forms)}{28}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Gradient Descent Updates}{28}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Unregularized GD.}{28}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{L\(_2\)-regularized GD.}{28}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Augmented Compact Form.}{28}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Convexity via the Hessian}{28}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Strict Convexity and Degeneracies}{28}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Summary}{29}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}Convergence Proof}{29}{section.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}Linear (Geometric) Convergence of Gradient Descent}{29}{subsection.5.2.1}\protected@file@percent }
+\newlabel{subsec:gd-linear-conv}{{5.2.1}{29}{Linear (Geometric) Convergence of Gradient Descent}{subsection.5.2.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Assumptions.}{29}{subsection.5.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Auxiliary inequalities (standard consequences).}{29}{subsection.5.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Distance contraction (main derivation).}{29}{AMS.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Choosing \(\eta \) and contraction factor.}{29}{AMS.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Function-value (suboptimality) decay.}{30}{AMS.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Remarks and sharper constants.}{30}{AMS.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Final concise theorem statement.}{30}{AMS.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Support Vector Machines}{31}{chapter.6}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Fundamentals and geometry}{31}{section.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.1}Distance From a Point to a Hyperplane}{31}{subsection.6.1.1}\protected@file@percent }
+\newlabel{subsec:distance-hyperplane}{{6.1.1}{31}{Distance From a Point to a Hyperplane}{subsection.6.1.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Step 1: Orthogonal projection.}{31}{subsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 2: Parameterization of the projection.}{31}{subsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 3: Enforce that \(x_i^\perp \in H\).}{31}{subsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 4: Compute the distance.}{31}{subsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Final formula.}{31}{subsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Signed distance (SVM geometric margin).}{31}{subsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Scale Invariance and Supporting Hyperplanes}{31}{section.6.2}\protected@file@percent }
+\newlabel{sec:scale-invariance}{{6.2}{31}{Scale Invariance and Supporting Hyperplanes}{section.6.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.1}Margins and Notation}{31}{subsection.6.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Functional margin.}{31}{subsection.6.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Geometric margin.}{31}{subsection.6.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.2}Points at Distance $\Gamma $ from the Hyperplane}{32}{subsection.6.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.3}Scale Invariance of the Hyperplane}{32}{subsection.6.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.4}Normalizing to $\pm 1$}{32}{subsection.6.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.5}Relation to the Geometric Margin}{32}{subsection.6.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.6}Summary}{32}{subsection.6.2.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.7}Derivation of the SVM Objective (Hard-Margin Primal)}{32}{subsection.6.2.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Functional margin}{32}{subsection.6.2.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Geometric margin}{32}{subsection.6.2.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Original problem}{32}{subsection.6.2.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.8}Lagrangian and stationarity}{33}{subsection.6.2.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{w:}{33}{subsection.6.2.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{b:}{33}{subsection.6.2.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.9}Dual form of the Lagrangian — derivation}{33}{subsection.6.2.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{KKT Analysis:}{34}{Item.26}\protected@file@percent }
+\gdef \@abspage@last{35}
