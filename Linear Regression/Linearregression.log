@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.10.24)  14 NOV 2025 00:09
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.10.24)  14 NOV 2025 06:24
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1024,7 +1024,123 @@ LaTeX Font Warning: Font shape `OT1/cmss/bx/it' undefined
 
 
 
-[10] (Linearregression.aux)
+[10]
+Chapter 2.
+
+
+
+
+
+
+[11
+
+]
+
+
+
+
+
+[12]
+Overfull \vbox (7.2085pt too high) has occurred while \output is active []
+
+
+
+
+
+
+
+
+
+[13]
+Chapter 3.
+
+
+
+
+
+
+[14
+
+]
+
+
+
+
+
+[15]
+
+
+
+
+
+[16]
+
+
+
+
+
+[17]
+
+
+
+
+
+[18]
+
+
+
+
+
+[19]
+Overfull \hbox (9.7823pt too wide) detected at line 2597
+[]
+ []
+
+
+
+
+
+
+
+[20]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 2786.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\ell' on input line 2786.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `subscript' on input line 2786.
+
+
+
+
+
+
+
+[21]
+
+
+
+
+
+[22]
+Overfull \hbox (9.6241pt too wide) detected at line 2978
+[]
+ []
+
+
+
+
+
+
+
+
+
+[23] (Linearregression.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
@@ -1034,20 +1150,20 @@ L3 programming layer <2025-09-02>
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `Linearregression.out' has not changed.
-(rerunfilecheck)             Checksum: F8F79084B77055E673AB1280E3BCE6B1;1272.
+(rerunfilecheck)             Checksum: CB4AC2823F59935A3C1E47B5920A6C1F;21581.
  ) 
 Here is how much of TeX's memory you used:
- 41466 strings out of 468081
- 966630 string characters out of 5439740
- 1507435 words of memory out of 5000000
- 69285 multiletter control sequences out of 15000+600000
- 650280 words of font info for 211 fonts, out of 8000000 for 9000
+ 41707 strings out of 468081
+ 970287 string characters out of 5439740
+ 1509881 words of memory out of 5000000
+ 69387 multiletter control sequences out of 15000+600000
+ 650931 words of font info for 222 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,14n,107p,1270b,1542s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\DELL\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcss1000.pk><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx7.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmss8.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmssbx10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmssi10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on Linearregression.pdf (10 pages, 272015 bytes).
+ 102i,14n,107p,1270b,1585s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\DELL\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcss1000.pk><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmbsy10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx7.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmss8.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmssbx10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmssi10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy5.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/latex/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on Linearregression.pdf (23 pages, 452369 bytes).
 PDF statistics:
- 209 PDF objects out of 1000 (max. 8388607)
- 43 named destinations out of 1000 (max. 500000)
- 47181 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 703 PDF objects out of 1000 (max. 8388607)
+ 160 named destinations out of 1000 (max. 500000)
+ 47965 words of extra memory for PDF output out of 51595 (max. 10000000)
 

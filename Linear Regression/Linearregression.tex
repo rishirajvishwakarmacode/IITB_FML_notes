@@ -1358,4 +1358,1774 @@ We analyze the effect of common data operations on the OLS closed-form solution 
 \end{itemize}
 % ============================================================   
 \end{multicols}
+
+\chapter{Linear Discriminative Models}
+\begin{multicols}{2}
+  % ============================================================
+\section*{Quadratic Discriminant Analysis}
+
+\subsection*{1. Model assumptions}
+We consider a $K$-class classification problem. For each class $k\in\{1,\dots,K\}$ assume the class-conditional density is multivariate normal:
+\[
+x\mid y=k \sim \mathcal{N}(\mu_k,\,\Sigma_k),
+\]
+with class-specific mean $\mu_k\in\mathbb{R}^d$ and covariance matrix $\Sigma_k\in\mathbb{R}^{d\times d}$ (symmetric, positive definite). Class priors are
+\[\pi_k = P(y=k), \qquad \sum_{k=1}^K \pi_k = 1.\]
+A new point $x$ is classified by choosing the class with largest posterior $p(y=k\mid x)$ (MAP rule).
+
+\subsection*{2. Likelihood $p(x\mid y=k)$}
+The Gaussian density for class $k$ is
+\[
+p(x\mid y=k) = \frac{1}{(2\pi)^{d/2} |\Sigma_k|^{1/2}} \exp\Bigl(-\tfrac{1}{2}(x-\mu_k)^\top \Sigma_k^{-1}(x-\mu_k)\Bigr).
+\]
+
+\subsection*{3. Posterior via Bayes' rule and the decision rule}
+By Bayes' rule the posterior is
+\[
+ p(y=k\mid x) = \frac{p(x\mid y=k)\,\pi_k}{\sum_{j=1}^K p(x\mid y=j)\,\pi_j}.
+\]
+The MAP classifier chooses
+\[
+\hat y(x) = \arg\max_k\; p(y=k\mid x) = \arg\max_k\; \bigl[\log p(x\mid y=k) + \log\pi_k\bigr].
+\]
+Define the discriminant function
+\[
+g_k(x) = \log p(x\mid y=k) + \log\pi_k.
+\]
+Substituting the Gaussian density gives
+\[
+\begin{aligned}
+g_k(x) &= -\frac{d}{2}\log(2\pi) - \frac{1}{2}\log|\Sigma_k| - \frac{1}{2}(x-\mu_k)^\top \Sigma_k^{-1}(x-\mu_k) + \log\pi_k.
+\end{aligned}
+\]
+Dropping the common constant $-\tfrac{d}{2}\log(2\pi)$ yields the equivalent discriminant
+\[
+\tilde g_k(x) = -\tfrac{1}{2}(x-\mu_k)^\top \Sigma_k^{-1}(x-\mu_k) - \tfrac{1}{2}\log|\Sigma_k| + \log\pi_k,
+\]
+which is a quadratic function of $x$ and thus induces quadratic decision boundaries in general.
+
+\subsection*{4. Pairwise decision boundary (between classes $i$ and $j$)}
+Class $i$ is preferred to class $j$ when $g_i(x)>g_j(x)$. The boundary $g_i(x)=g_j(x)$ is given by
+\[
+-\tfrac{1}{2}(x-\mu_i)^\top\Sigma_i^{-1}(x-\mu_i) - \tfrac{1}{2}\log|\Sigma_i| + \log\pi_i = -\tfrac{1}{2}(x-\mu_j)^\top\Sigma_j^{-1}(x-\mu_j) - \tfrac{1}{2}\log|\Sigma_j| + \log\pi_j.
+\]
+Bringing all terms to one side and multiplying by $-2$ yields
+\[
+(x-\mu_i)^\top\Sigma_i^{-1}(x-\mu_i) - (x-\mu_j)^\top\Sigma_j^{-1}(x-\mu_j) + \log\frac{|\Sigma_i|}{|\Sigma_j|} - 2\log\frac{\pi_i}{\pi_j} = 0.
+\]
+Expanding the quadratic forms gives the standard quadratic form
+\[
+x^\top(\Sigma_i^{-1}-\Sigma_j^{-1})x - 2(\mu_i^\top\Sigma_i^{-1}-\mu_j^\top\Sigma_j^{-1})x + (\mu_i^\top\Sigma_i^{-1}\mu_i - \mu_j^\top\Sigma_j^{-1}\mu_j) + \log\frac{|\Sigma_i|}{|\Sigma_j|} - 2\log\frac{\pi_i}{\pi_j} = 0.
+\]
+Define
+\[
+\begin{aligned}
+A_{ij} &= \tfrac{1}{2}(\Sigma_i^{-1}-\Sigma_j^{-1})\quad(\text{symmetric}),\\
+b_{ij} &= \Sigma_i^{-1}\mu_i - \Sigma_j^{-1}\mu_j,\\
+c_{ij} &= -\tfrac{1}{2}(\mu_i^\top\Sigma_i^{-1}\mu_i - \mu_j^\top\Sigma_j^{-1}\mu_j) - \tfrac{1}{2}\log\frac{|\Sigma_i|}{|\Sigma_j|} + \log\frac{\pi_i}{\pi_j}.
+\end{aligned}
+\]
+The boundary can be written compactly as
+\[
+x^\top A_{ij} x + b_{ij}^\top x + c_{ij} = 0.
+\]
+If $A_{ij}\neq 0$ (i.e. $\Sigma_i\neq\Sigma_j$) the boundary is truly quadratic (ellipses, hyperbolas, etc.\ depending on the signature of $A_{ij}$).
+
+\subsection*{5. Special case: Linear Discriminant Analysis (LDA)}
+If all classes share a common covariance $\Sigma_k=\Sigma$ for all $k$, then $\Sigma_i^{-1}-\Sigma_j^{-1}=0$ and $A_{ij}=0$, so the quadratic terms cancel. The discriminant simplifies to a linear function:
+\[
+\tilde g_k(x) = x^\top \Sigma^{-1}\mu_k - \tfrac{1}{2}\mu_k^\top\Sigma^{-1}\mu_k + \log\pi_k.
+\]
+The pairwise boundary between classes $i,j$ reduces to
+\[
+(\Sigma^{-1}(\mu_i-\mu_j))^\top x + \Bigl(-\tfrac{1}{2}(\mu_i^\top\Sigma^{-1}\mu_i - \mu_j^\top\Sigma^{-1}\mu_j) + \log\tfrac{\pi_i}{\pi_j}\Bigr)=0,
+\]
+which is linear in $x$. This is the LDA decision rule.
+
+\subsection*{6. MLE parameter estimates (supervised)}
+Given labeled training data $\{(x_n,y_n)\}_{n=1}^N$, let $N_k=\sum_{n=1}^N\mathbf{1}\{y_n=k\}$ and denote class-$k$ samples by $x_n^{(k)}$. The log-likelihood of the labeled data is
+\[
+L(\{\mu_k,\Sigma_k,\pi_k\}) = \sum_{n=1}^N \log\bigl(\pi_{y_n}\,\mathcal{N}(x_n\mid\mu_{y_n},\Sigma_{y_n})\bigr).
+\]
+Maximizing this yields closed-form MLEs:
+\[
+\hat\pi_k = \frac{N_k}{N},\qquad
+\hat\mu_k = \frac{1}{N_k}\sum_{n:y_n=k} x_n,
+\]
+and the class-conditional covariance (MLE convention)
+\[
+\hat\Sigma_k = \frac{1}{N_k}\sum_{n:y_n=k} (x_n-\hat\mu_k)(x_n-\hat\mu_k)^\top.
+\]
+(An unbiased sample covariance uses denominator $N_k-1$ instead of $N_k$; the MLE uses $N_k$.)
+
+% ============================================================
+% ============================================================
+\section*{Linear Discriminant Analysis (LDA)}
+
+\subsection*{1. Model assumptions}
+We consider a $K$-class classification problem and assume for each class $k$:
+\[
+x \mid y=k \sim \mathcal{N}(\mu_k,\,\Sigma),
+\]
+i.e. all classes share the same covariance matrix $\Sigma\in\mathbb{R}^{d\times d}$ (symmetric, positive definite) but have class-specific means $\mu_k\in\mathbb{R}^d$. Class priors are
+\[
+\pi_k = P(y=k), \qquad \sum_{k=1}^K \pi_k = 1.
+\]
+
+\subsection*{2. Class-conditional likelihood}
+For class $k$ the density is
+\[
+p(x\mid y=k) = \frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}}
+\exp\!\Bigl(-\tfrac{1}{2}(x-\mu_k)^\top\Sigma^{-1}(x-\mu_k)\Bigr).
+\]
+
+\subsection*{3. Posterior via Bayes' rule}
+By Bayes' rule,
+\[
+p(y=k\mid x) = \frac{\pi_k\,p(x\mid y=k)}{\sum_{j=1}^K \pi_j\,p(x\mid y=j)}.
+\]
+The MAP classifier chooses
+\[
+\hat y(x) = \arg\max_k\; p(y=k\mid x)
+= \arg\max_k\; \bigl[\log p(x\mid y=k) + \log\pi_k\bigr].
+\]
+Define the discriminant
+\[
+g_k(x) = \log p(x\mid y=k) + \log\pi_k.
+\]
+
+\subsection*{4. Deriving the discriminant function}
+Substituting the Gaussian likelihood gives
+\[
+g_k(x)
+= -\tfrac{d}{2}\log(2\pi) - \tfrac{1}{2}\log|\Sigma|
+  - \tfrac{1}{2}(x-\mu_k)^\top\Sigma^{-1}(x-\mu_k) + \log\pi_k.
+\]
+Dropping the class-independent terms $-\tfrac{d}{2}\log(2\pi)-\tfrac{1}{2}\log|\Sigma|$ yields an equivalent discriminant
+\[
+\tilde g_k(x) = -\tfrac{1}{2}(x-\mu_k)^\top\Sigma^{-1}(x-\mu_k) + \log\pi_k.
+\]
+Expand the quadratic form:
+\[
+(x-\mu_k)^\top\Sigma^{-1}(x-\mu_k) = x^\top\Sigma^{-1}x - 2\mu_k^\top\Sigma^{-1}x + \mu_k^\top\Sigma^{-1}\mu_k.
+\]
+Since $-\tfrac{1}{2}x^\top\Sigma^{-1}x$ is common to all classes, it can be dropped, leaving the affine discriminant
+\[
+g_k(x) = \mu_k^\top\Sigma^{-1}x - \tfrac{1}{2}\mu_k^\top\Sigma^{-1}\mu_k + \log\pi_k,
+\]
+which is linear in $x$ (affine decision function).
+
+\subsection*{5. Pairwise class boundary}
+The boundary between classes $i$ and $j$ is given by $g_i(x)=g_j(x)$, i.e.
+\[
+\mu_i^\top\Sigma^{-1}x - \tfrac{1}{2}\mu_i^\top\Sigma^{-1}\mu_i + \log\pi_i
+= \mu_j^\top\Sigma^{-1}x - \tfrac{1}{2}\mu_j^\top\Sigma^{-1}\mu_j + \log\pi_j.
+\]
+Collecting terms yields a linear equation
+\[
+(\mu_i-\mu_j)^\top\Sigma^{-1}x
+= \tfrac{1}{2}\bigl(\mu_i^\top\Sigma^{-1}\mu_i - \mu_j^\top\Sigma^{-1}\mu_j\bigr)
++ \log\frac{\pi_i}{\pi_j}.
+\]
+Equivalently,
+\[
+w_{ij}^\top x + b_{ij} = 0,
+\quad\text{with}\quad
+w_{ij} = \Sigma^{-1}(\mu_i-\mu_j),\qquad
+b_{ij} = -\tfrac{1}{2}(\mu_i^\top\Sigma^{-1}\mu_i - \mu_j^\top\Sigma^{-1}\mu_j) + \log\frac{\pi_i}{\pi_j}.
+\]
+Thus LDA yields hyperplane decision boundaries.
+
+\subsection*{6. MLE parameter estimation}
+Given labeled data $\{(x_n,y_n)\}_{n=1}^N$, let $N_k=\sum_{n=1}^N \mathbf{1}\{y_n=k\}$ and denote class-$k$ samples by $x_n^{(k)}$. The MLEs are
+\[
+\hat\pi_k = \frac{N_k}{N}, \qquad
+\hat\mu_k = \frac{1}{N_k}\sum_{n:y_n=k} x_n.
+\]
+The pooled (shared) covariance MLE is
+\[
+\hat\Sigma = \frac{1}{N}\sum_{k=1}^K \sum_{n:y_n=k} (x_n - \hat\mu_k)(x_n - \hat\mu_k)^\top.
+\]
+(Note: the MLE uses denominator $N$; an unbiased pooled estimator uses denominator $N-K$.)
+
+\subsection*{7. Geometry of LDA decision boundaries}
+\begin{itemize}
+  \item With equal covariance the discriminants differ only by a linear term $\mu_k^\top\Sigma^{-1}x$ and a bias $-\tfrac{1}{2}\mu_k^\top\Sigma^{-1}\mu_k + \log\pi_k$. Pairwise boundaries are parallel hyperplanes determined by $w_{ij}=\Sigma^{-1}(\mu_i-\mu_j)$.
+  \item If priors are equal ($\pi_i=\pi_j$), classification reduces to choosing the class with smallest Mahalanobis distance $\|x-\mu_k\|_{\Sigma^{-1}} = \sqrt{(x-\mu_k)^\top\Sigma^{-1}(x-\mu_k)}$.
+  \item The orientation of the boundary depends on $\Sigma^{-1}$ and the difference of means: $w_{ij}=\Sigma^{-1}(\mu_i-\mu_j)$.
+\end{itemize}
+% ============================================================
+% ============================================================
+\section*{Gaussian Naive Bayes}
+
+\subsection*{1. Assumptions}
+We consider a $K$-class problem with feature vector $\mathbf{x}=(x_1,\dots,x_d)^\top\in\mathbb{R}^d$.  
+Naive Bayes assumes conditional feature independence given the class:
+\[
+p(\mathbf{x}\mid y=k) = \prod_{j=1}^d p(x_j\mid y=k).
+\]
+Under Gaussian feature models each conditional distribution is univariate Gaussian:
+\[
+x_j \mid (y=k) \sim \mathcal{N}(\mu_{kj},\,\sigma_{kj}^2),
+\]
+with class- and feature-specific parameters $\mu_{kj}$ and $\sigma_{kj}^2$. Class priors are
+\[
+\pi_k = P(y=k),\qquad \sum_{k=1}^K \pi_k = 1.
+\]
+
+\subsection*{2. Class-conditional likelihood}
+By independence and Gaussianity,
+\[
+\begin{aligned}
+p(\mathbf{x}\mid y=k)
+&= \prod_{j=1}^d \frac{1}{\sqrt{2\pi}\,\sigma_{kj}}
+\exp\!\Big(-\frac{(x_j-\mu_{kj})^2}{2\sigma_{kj}^2}\Big)\\[6pt]
+&= (2\pi)^{-d/2}\Big(\prod_{j=1}^d \sigma_{kj}\Big)^{-1}
+\exp\!\Big(-\tfrac{1}{2}\sum_{j=1}^d \frac{(x_j-\mu_{kj})^2}{\sigma_{kj}^2}\Big).
+\end{aligned}
+\]
+
+\subsection*{3. Posterior and discriminant function}
+By Bayes' rule,
+\[
+p(y=k\mid\mathbf{x}) = \frac{\pi_k\,p(\mathbf{x}\mid y=k)}{\sum_{r=1}^K \pi_r\,p(\mathbf{x}\mid y=r)}.
+\]
+For classification it suffices to compare the (log) unnormalized posterior:
+\[
+g_k(\mathbf{x}) = \log\pi_k + \log p(\mathbf{x}\mid y=k).
+\]
+Dropping the constant $-\tfrac{d}{2}\log(2\pi)$ yields
+\[
+g_k(\mathbf{x}) = \log\pi_k - \tfrac{1}{2}\sum_{j=1}^d \log\sigma_{kj}^2
+- \tfrac{1}{2}\sum_{j=1}^d \frac{(x_j-\mu_{kj})^2}{\sigma_{kj}^2}.
+\]
+The classifier predicts
+\[
+\hat y(\mathbf{x}) = \arg\max_{k} \; g_k(\mathbf{x}).
+\]
+Note that $g_k(\mathbf{x})$ is additive across features, enabling per-feature computations.
+
+\subsection*{4. Pairwise boundary (binary $K=2$)}
+For classes $1$ and $2$ the decision surface $g_1(\mathbf{x})=g_2(\mathbf{x})$ is
+\[
+\sum_{j=1}^d\Bigg[
+\frac{(x_j-\mu_{2j})^2}{2\sigma_{2j}^2} - \frac{(x_j-\mu_{1j})^2}{2\sigma_{1j}^2}
++ \tfrac{1}{2}\log\frac{\sigma_{2j}^2}{\sigma_{1j}^2}
+\Bigg] = \log\frac{\pi_1}{\pi_2}.
+\]
+This is generally a sum of univariate quadratics in the $x_j$ and thus a (possibly) quadratic decision surface. Special cases:
+\begin{itemize}
+  \item If $\sigma_{1j}^2=\sigma_{2j}^2=\sigma_j^2$ for all $j$, the quadratic $x_j^2$ terms cancel and the boundary is linear:
+  \[
+  \sum_{j=1}^d \frac{\mu_{1j}-\mu_{2j}}{\sigma_j^2}\,x_j + \text{const}=0.
+  \]
+  \item If additionally $\sigma_{kj}^2=\sigma^2$ for all $k,j$, the boundary reduces to a dot-product with mean difference:
+  \[
+  (\mu_1-\mu_2)^\top x + \text{const}=0.
+  \]
+\end{itemize}
+
+\subsection*{5. MLE parameter estimates (supervised training)}
+Given labeled data $\{(x_n,y_n)\}_{n=1}^N$, let $N_k=\sum_{n=1}^N\mathbf{1}\{y_n=k\}$.
+\[
+\hat\pi_k = \frac{N_k}{N}.
+\]
+Class- and feature-wise sample means (MLE):
+\[
+\hat\mu_{kj} = \frac{1}{N_k}\sum_{n:y_n=k} x_{n,j}.
+\]
+Class- and feature-wise sample variances (MLE convention, denominator $N_k$):
+\[
+\hat\sigma_{kj}^2 = \frac{1}{N_k}\sum_{n:y_n=k} (x_{n,j}-\hat\mu_{kj})^2.
+\]
+(An unbiased variance uses denominator $N_k-1$; in practice enforce a variance floor $\varepsilon>0$ to avoid division by zero.)
+
+\subsection*{6. Relation to LDA / QDA}
+Gaussian Naive Bayes corresponds to class-specific diagonal covariance matrices:
+\[
+\Sigma_k = \operatorname{diag}(\sigma_{k1}^2,\dots,\sigma_{kd}^2),
+\]
+so GNB is a constrained special case of QDA. If variances are shared across classes per feature ($\sigma_{kj}^2=\sigma_j^2$) quadratic terms cancel and boundaries become linear — resembling LDA. If the pooled shared covariance of LDA is diagonal and matches GNB's variances, LDA and Gaussian NB produce identical decision boundaries; otherwise they differ.
+
+% ============================================================
+
+\end{multicols}
+
+\chapter{Discriminative Models for Classification}
+\begin{multicols}{2}
+% ============================================================
+\section{Sigmoid Function}
+
+\subsection{Definition}
+The logistic (sigmoid) function is defined by
+\[
+\sigma(z)=\frac{1}{1+e^{-z}},\qquad z\in\mathbb{R},
+\]
+which maps real numbers to the interval $(0,1)$.
+
+\subsection{Derivative}
+Differentiating $\sigma$ gives
+\[
+\sigma'(z)=\frac{d}{dz}\left(\frac{1}{1+e^{-z}}\right)
+=\frac{e^{-z}}{(1+e^{-z})^2}.
+\]
+Rewriting in terms of $\sigma(z)$ yields the well-known identity
+\[
+\boxed{\;\sigma'(z)=\sigma(z)\bigl(1-\sigma(z)\bigr)\;}.
+\]
+
+\subsection{Range and bounds}
+Since $e^{-z}>0$ for all $z$, the denominator $1+e^{-z}>1$ and therefore
+\[
+0<\sigma(z)<1\qquad\forall z\in\mathbb{R}.
+\]
+
+\subsection{Symmetry}
+The sigmoid satisfies the symmetry relation
+\[
+\sigma(z)=1-\sigma(-z).
+\]
+
+\subsection{Logistic regression and log-odds}
+In logistic regression the class probability is modeled as
+\[
+p(y=1\mid x)=\sigma(w^\top x + b).
+\]
+The odds and log-odds are
+\[
+\frac{p}{1-p}=e^{w^\top x + b},\qquad
+\log\frac{p}{1-p}=w^\top x + b,
+\]
+so logistic regression models the \emph{log-odds} as an affine function of features.
+
+\subsection{Interpretation of weights}
+\paragraph{Magnitude.} A unit increase in feature $x_j$ changes the log-odds by $w_j$ and multiplies the odds by $e^{w_j}$. Thus $|w_j|$ measures the strength of feature $x_j$.
+
+\paragraph{Sign.} If $w_j>0$ increasing $x_j$ raises $p(y=1\mid x)$; if $w_j<0$ increasing $x_j$ lowers $p(y=1\mid x)$; if $w_j=0$ the feature has no effect.
+
+\subsection{Scaling weights}
+If $w'=\alpha w$ and $b'=\alpha b$ with $\alpha>0$, then the decision boundary
+$w'^\top x + b'=0$ is identical to $w^\top x + b=0$ (classification unchanged),
+although the sigmoid becomes steeper and probabilities change. Multiplying by a negative scalar flips class labels.
+
+\subsection{Need for the bias term}
+Without bias ($b=0$):
+\[
+p(y=1\mid x)=\sigma(w^\top x)
+\]
+the decision boundary is forced through the origin ($w^\top x=0$) and $p(y=1\mid x=0)=0.5$. The bias term permits translation of the hyperplane and models baseline class imbalance.
+
+\subsection{Compact summary}
+\begin{itemize}
+  \item $\sigma(z)=\dfrac{1}{1+e^{-z}}$, range $(0,1)$.
+  \item $\sigma'(z)=\sigma(z)\bigl(1-\sigma(z)\bigr)$.
+  \item Symmetry: $\sigma(z)=1-\sigma(-z)$.
+  \item Logistic regression models $\log\frac{p}{1-p}=w^\top x+b$ (log-odds linear).
+  \item $|w_j|$ = strength; $\operatorname{sign}(w_j)$ = direction.
+  \item Positive scaling of $(w,b)$ leaves the decision boundary unchanged.
+  \item Bias term is necessary to avoid forcing the boundary through the origin.
+\end{itemize}
+% ============================================================
+% ============================================================
+\section{Log-Likelihood}
+
+\subsection{Model}
+For binary logistic regression, the conditional probability of the positive class is
+\[
+p(y=1\mid x;w,b)=\sigma(z),\qquad z=w^\top x + b,
+\]
+where the sigmoid function is
+\[
+\sigma(z)=\frac{1}{1+e^{-z}}.
+\]
+Thus,
+\[
+p(y=0\mid x;w,b)=1-\sigma(z),
+\]
+and the compact expression for either label \(y\in\{0,1\}\) is
+\[
+p(y\mid x;w,b)=\sigma(z)^{\,y}\bigl(1-\sigma(z)\bigr)^{1-y}.
+\]
+
+\subsection{Likelihood of the dataset}
+Assuming IID samples \((x_n,y_n)\) for \(n=1,\dots,N\), the likelihood is
+\[
+\mathcal{L}(w,b)
+=\prod_{n=1}^N \sigma(z_n)^{y_n}\bigl(1-\sigma(z_n)\bigr)^{1-y_n},
+\qquad
+z_n = w^\top x_n + b.
+\]
+
+\subsection{Log-likelihood}
+Taking logs gives the standard form
+\[
+\ell(w,b)
+= \sum_{n=1}^N \Big[y_n\log\sigma(z_n)
++ (1-y_n)\log\bigl(1-\sigma(z_n)\bigr)\Big].
+\]
+
+\subsection{Equivalent compact (stable) expression}
+Using the identity
+\[
+y_n\log\sigma(z_n)+(1-y_n)\log\bigl(1-\sigma(z_n)\bigr)
+= y_n z_n - \log(1+e^{z_n}),
+\]
+the log-likelihood becomes
+\[
+\boxed{\;\ell(w,b)=\sum_{n=1}^N \Big( y_n z_n - \log(1+e^{z_n})\Big),\qquad
+z_n=w^\top x_n+b.\;}
+\]
+
+\subsection{Negative log-likelihood (binary cross-entropy)}
+The loss minimized in logistic regression is the negative log-likelihood:
+\[
+\boxed{\;
+\mathcal{L}_{\text{NLL}}(w,b)
+= -\ell(w,b)
+= \sum_{n=1}^N \Big( \log(1+e^{z_n}) - y_n z_n \Big). \;}
+\]
+
+\subsection{Gradient of the log-likelihood}
+Define \(p_n=\sigma(z_n)\). Then
+\[
+\nabla_w \ell(w,b)
+= \sum_{n=1}^N (y_n - p_n)\, x_n,
+\qquad
+\frac{\partial \ell}{\partial b}
+= \sum_{n=1}^N (y_n - p_n).
+\]
+
+For the NLL (to be minimized),
+\[
+\nabla_w \mathcal{L}_{\text{NLL}}
+= \sum_{n=1}^N (p_n - y_n)x_n,
+\qquad
+\frac{\partial \mathcal{L}_{\text{NLL}}}{\partial b}
+= \sum_{n=1}^N (p_n - y_n).
+\]
+
+\subsection{Hessian (optional)}
+Let \(p_n=\sigma(z_n)\) and \(R=\mathrm{diag}(p_n(1-p_n))\).  
+With feature matrix \(X\) (rows \(x_n^\top\)),
+\[
+\nabla^2_w \mathcal{L}_{\text{NLL}}
+= X^\top R X,
+\]
+which is positive semi-definite, proving convexity of the NLL in \(w\).
+
+\subsection{Summary}
+\begin{itemize}
+    \item Likelihood: \(\prod_n \sigma(z_n)^{y_n}(1-\sigma(z_n))^{1-y_n}\).
+    \item Log-likelihood: \(\ell=\sum_n(y_n z_n - \log(1+e^{z_n}))\).
+    \item NLL: \(\mathcal{L}_{\text{NLL}}=\sum_n(\log(1+e^{z_n})-y_n z_n)\).
+    \item Gradient: \(\nabla_w\mathcal{L}_{\text{NLL}}=\sum_n(p_n-y_n)x_n\).
+\end{itemize}
+% ============================================================
+% ============================================================
+\section{Convexity}
+
+\subsection{Setup: Binary Cross-Entropy / NLL}
+For binary labels \(y_n \in \{0,1\}\) and data \((x_n,y_n)\), define
+\[
+z_n(w)=w^\top x_n + b,
+\]
+(or equivalently treat \(w\) as augmented to include the bias).
+
+The negative log-likelihood (binary cross-entropy) is
+\[
+L(w)=\sum_{n=1}^N \Bigl( \log(1+e^{\,z_n(w)}) - y_n z_n(w) \Bigr).
+\]
+
+We show that \(L(w)\) is convex in \(w\).
+
+\subsection{Proof via Convex Function Composition}
+Define a scalar function \(\phi:\mathbb{R}\to\mathbb{R}\) by
+\[
+\phi(a)=\log(1+e^{a}).
+\]
+
+Compute first and second derivatives:
+\[
+\phi'(a)=\frac{e^{a}}{1+e^{a}}=\sigma(a),
+\]
+\[
+\phi''(a)=\frac{e^{a}}{(1+e^{a})^2}
+=\sigma(a)\bigl(1-\sigma(a)\bigr) > 0
+\qquad \forall\, a\in\mathbb{R}.
+\]
+
+Thus \(\phi\) is strictly convex.
+
+Each term in the loss is
+\[
+\phi\bigl(z_n(w)\bigr) - y_n z_n(w).
+\]
+
+Since
+\[
+z_n(w)=w^\top x_n
+\]
+is an affine function of \(w\), the composition \(\phi(z_n(w))\) is convex in \(w\).  
+The term \(-y_n z_n(w)\) is affine in \(w\) and therefore convex.
+
+A finite sum of convex functions is convex, hence
+\[
+\boxed{L(w)\ \text{is convex in}\ w.}
+\]
+
+% ============================================================
+% ============================================================
+\section{Matrix Form of the Log-Likelihood}
+
+\subsection{Setup}
+Let the data matrix be
+\[
+X \in \mathbb{R}^{N \times d}, \qquad 
+\text{(row $n$ is } x_n^\top),
+\]
+with weight vector \(w \in \mathbb{R}^d\) and bias \(b \in \mathbb{R}\).
+
+Labels:
+\[
+y \in \mathbb{R}^N, \qquad y_n \in \{0,1\}.
+\]
+
+Define linear scores and probabilities:
+\[
+z = Xw + b\,\mathbf{1} \in \mathbb{R}^N,\qquad
+p = \sigma(z)=\frac{1}{1+e^{-z}}.
+\]
+
+\subsection{Log-Likelihood (Vector Form)}
+The binary log-likelihood is
+\[
+\ell(w,b)
+= \sum_{n=1}^N \left[ y_n \log p_n + (1-y_n)\log(1-p_n) \right].
+\]
+
+In vectorized form:
+\[
+\boxed{
+\ell(w,b)
+= y^\top \log(p) \;+\; (1-y)^\top \log(1-p),
+}
+\]
+where logs are applied elementwise.
+
+\subsection{Compact Form Using Linear Scores}
+Using
+\[
+\log p = z - \log(1+e^{z}), \qquad
+\log(1-p) = -\log(1+e^{z}),
+\]
+the log-likelihood becomes
+\[
+\boxed{
+\ell(w,b)
+= y^\top z \;-\; \mathbf{1}^\top \log\bigl(1+e^{z}\bigr),
+}
+\]
+where both exponential and logarithm act elementwise.
+
+\subsection{Augmented Representation}
+Define augmented feature matrix and parameter vector:
+\[
+\tilde{X} = \begin{bmatrix} X & \mathbf{1} \end{bmatrix}, 
+\qquad 
+\tilde{w} = \begin{bmatrix} w \\ b \end{bmatrix}.
+\]
+
+Then
+\[
+z = \tilde{X}\tilde{w},
+\]
+and the log-likelihood becomes
+\[
+\boxed{
+\ell(\tilde{w})
+= y^\top (\tilde{X}\tilde{w})
+\;-\;
+\mathbf{1}^\top \log\!\bigl(1+e^{\,\tilde{X}\tilde{w}}\bigr).
+}
+\]
+
+% ============================================================
+% ============================================================
+\section{Log-Likelihood Limits and Perfect Separability}
+
+\subsection{Sigmoid Limit Behavior}
+The logistic (sigmoid) function
+\[
+\sigma(z)=\frac{1}{1+e^{-z}}
+\]
+satisfies
+\[
+\lim_{z\to +\infty}\sigma(z)=1,
+\qquad
+\lim_{z\to -\infty}\sigma(z)=0.
+\]
+
+Thus perfect classification with infinite confidence requires
+\[
+z\to+\infty \ \text{for } y=1,
+\qquad
+z\to-\infty \ \text{for } y=0.
+\]
+
+\subsection{Log-Likelihood of a Single Sample}
+For binary labels,
+\[
+\log p(y\mid x)
+= y\log p + (1-y)\log(1-p),
+\qquad p=\sigma(z).
+\]
+
+Since \(0<p<1\),
+\[
+\log(p)\le 0,
+\qquad
+\log(1-p)\le 0,
+\]
+hence
+\[
+\boxed{\log p(y\mid x)\le 0.}
+\]
+
+\subsection{Limit for Positive Samples}
+For \(y=1\),
+\[
+\log p(y=1\mid x)=\log \sigma(z).
+\]
+Because
+\[
+\lim_{z\to+\infty}\sigma(z)=1,
+\]
+\[
+\lim_{z\to+\infty} \log \sigma(z)=\log(1)=0.
+\]
+
+\subsection{Limit for Negative Samples}
+For \(y=0\),
+\[
+\log p(y=0\mid x)=\log(1-\sigma(z)).
+\]
+Since
+\[
+\lim_{z\to -\infty}\sigma(z)=0,
+\]
+\[
+\lim_{z\to -\infty} \log(1-\sigma(z))=\log(1)=0.
+\]
+
+\subsection{Implication for the Full Log-Likelihood}
+The full log-likelihood is
+\[
+\ell(w)=\sum_{n=1}^N \log p(y_n\mid x_n).
+\]
+
+To make every term tend to \(0\), we need
+\[
+z_n = w^\top x_n + b \to 
+\begin{cases}
++\infty & y_n=1,\\[4pt]
+-\infty & y_n=0.
+\end{cases}
+\]
+
+For linearly separable data, scaling \(w\mapsto c w\), \(c\to\infty\), yields
+\[
+z_n(c)=c(w^\top x_n + b),
+\]
+and therefore
+\[
+\lim_{c\to\infty}\ell(cw)=0.
+\]
+
+\subsection{Zero is the Maximum Possible Log-Likelihood}
+For any probability \(0<p<1\),
+\[
+\log p < 0.
+\]
+Thus
+\[
+\boxed{
+\ell(w) \le 0 \quad \text{for all } w,
+}
+\]
+with equality only when every predicted probability equals the true label exactly.
+
+\subsection{Final Summary}
+\[
+\boxed{
+\ell(w)\to 0
+\quad\Longleftrightarrow\quad
+w^\top x_n + b \to
+\begin{cases}
++\infty, & y_n=1,\\[4pt]
+-\infty, & y_n=0,
+\end{cases}
+}
+\]
+
+This occurs only under perfect linear separability.  
+Therefore logistic regression has \textbf{no finite maximum-likelihood solution} in separable datasets without regularization.
+
+% ============================================================
+% ============================================================
+\section{Gradient of Logistic Regression}
+
+\subsection{Setup}
+Let
+\[
+X \in \mathbb{R}^{N \times d}, \qquad y \in \mathbb{R}^N,\quad y_n \in \{0,1\}.
+\]
+Parameters:
+\[
+w \in \mathbb{R}^d,\qquad b \in \mathbb{R}.
+\]
+Define logits and probabilities:
+\[
+z = Xw + b\,\mathbf{1}, \qquad 
+p = \sigma(z) = \frac{1}{1+e^{-z}} \in \mathbb{R}^N.
+\]
+
+The negative log-likelihood (cross-entropy) is
+\[
+\mathcal{L}(w,b)
+= -\sum_{n=1}^N \left[ y_n \log p_n + (1-y_n)\log(1-p_n) \right].
+\]
+
+\subsection{Derivative for a Single Sample}
+For a single sample,
+\[
+\ell_n = -\left[y_n\log p_n + (1-y_n)\log(1-p_n)\right].
+\]
+Using the identity \(\sigma'(z)=p(1-p)\),
+\[
+\frac{\partial \ell_n}{\partial z_n} = p_n - y_n.
+\]
+
+\subsection{Gradients w.r.t. Parameters}
+Since
+\[
+z_n = w^\top x_n + b, 
+\qquad
+\frac{\partial z_n}{\partial w} = x_n,\qquad
+\frac{\partial z_n}{\partial b} = 1,
+\]
+we obtain
+\[
+\frac{\partial \ell_n}{\partial w} = (p_n - y_n) x_n,
+\qquad
+\frac{\partial \ell_n}{\partial b} = p_n - y_n.
+\]
+
+Summing over all samples yields the full gradient.
+
+\subsection{Matrix Derivation of the Vector Form}
+Stacking the sample-wise derivatives:
+\[
+p - y = 
+\begin{bmatrix}
+p_1 - y_1 \\
+\vdots \\
+p_N - y_N
+\end{bmatrix}
+\in \mathbb{R}^N.
+\]
+
+Using that
+\[
+\nabla_w z = X, \qquad z = Xw + b\,\mathbf{1},
+\]
+the gradient is computed as
+\[
+\nabla_w \mathcal{L}
+= \sum_{n=1}^N (p_n - y_n) x_n
+= X^\top (p - y).
+\]
+
+Similarly,
+\[
+\frac{\partial \mathcal{L}}{\partial b}
+= \sum_{n=1}^N (p_n - y_n)
+= \mathbf{1}^\top (p - y).
+\]
+
+\subsection{Final Vector and Augmented Forms}
+\[
+\boxed{
+\nabla_w \mathcal{L} = X^\top (p - y)
+}
+\]
+\[
+\boxed{
+\frac{\partial \mathcal{L}}{\partial b}
+= \mathbf{1}^\top (p - y)
+}
+\]
+
+Augment features and parameters:
+\[
+\tilde{X} = \begin{bmatrix} X & \mathbf{1} \end{bmatrix}, \qquad
+\tilde{w} = \begin{bmatrix} w \\ b \end{bmatrix}.
+\]
+
+Then the gradient becomes
+\[
+\boxed{
+\nabla_{\tilde{w}}\mathcal{L}
+= \tilde{X}^\top (p - y)
+}
+\]
+
+% ============================================================
+% ============================================================
+\section{Gradient Descent on Logistic Regression}
+
+\subsection{Setup}
+Given data
+\[
+X \in \mathbb{R}^{N \times d}, \qquad 
+y \in \mathbb{R}^N,\quad y_n \in \{0,1\},
+\]
+and parameters 
+\[
+w \in \mathbb{R}^d,\qquad b \in \mathbb{R},
+\]
+define logits and probabilities:
+\[
+z = Xw + b\,\mathbf{1}, \qquad
+p = \sigma(z)=\frac{1}{1+e^{-z}}.
+\]
+
+The negative log-likelihood (cross-entropy) is
+\[
+\mathcal{L}(w,b)
+= -\sum_{n=1}^N\left[ y_n\log p_n + (1-y_n)\log(1-p_n) \right].
+\]
+
+The gradients (derived earlier) are
+\[
+\nabla_w \mathcal{L} = X^\top (p-y), \qquad
+\frac{\partial \mathcal{L}}{\partial b} = \mathbf{1}^\top (p-y).
+\]
+
+In augmented notation define
+\[
+\tilde{X} = \begin{bmatrix} X & \mathbf{1} \end{bmatrix}, \qquad
+\tilde{w} = \begin{bmatrix} w \\ b \end{bmatrix}.
+\]
+Then
+\[
+\nabla_{\tilde{w}}\mathcal{L} = \tilde{X}^\top(p-y).
+\]
+
+\subsection{Batch Gradient Descent (BGD)}
+At iteration \(t\), compute 
+\[
+g^{(t)} = \tilde{X}^\top \left( \sigma(\tilde{X}\tilde{w}^{(t)}) - y \right).
+\]
+Update:
+\[
+\boxed{
+\tilde{w}^{(t+1)}
+= \tilde{w}^{(t)} - \eta\, \tilde{X}^\top\!\left( \sigma(\tilde{X}\tilde{w}^{(t)}) - y \right),
+}
+\]
+where \(\eta>0\) is the learning rate.
+
+Separately for \(w\) and \(b\),
+\[
+w \leftarrow w - \eta\, X^\top(p-y), 
+\qquad 
+b \leftarrow b - \eta\, \mathbf{1}^\top(p-y).
+\]
+
+\subsubsection*{L2-Regularized BGD}
+For objective 
+\[
+\mathcal{L}_\lambda = \mathcal{L} + \tfrac{\lambda}{2}\|w\|^2,
+\]
+(no penalty on \(b\)),
+\[
+\nabla_w \mathcal{L}_\lambda = X^\top(p-y) + \lambda w.
+\]
+Thus the update becomes
+\[
+\boxed{
+w \leftarrow w - \eta \big(X^\top(p-y) + \lambda w\big), \qquad 
+b \leftarrow b - \eta\,\mathbf{1}^\top(p-y).
+}
+\]
+
+\subsection{Stochastic Gradient Descent (SGD)}
+Choose an index \(i\in\{1,\dots,N\}\).  
+Compute
+\[
+z_i = w^\top x_i + b,\qquad p_i = \sigma(z_i).
+\]
+Per-example gradient:
+\[
+\nabla_w \ell_i = (p_i - y_i)x_i, \qquad 
+\frac{\partial \ell_i}{\partial b} = p_i - y_i.
+\]
+
+SGD update:
+\[
+w \leftarrow w - \eta (p_i - y_i)x_i,
+\qquad
+b \leftarrow b - \eta (p_i - y_i).
+\]
+
+In augmented form let \(\tilde{x}_i = \begin{bmatrix} x_i \\ 1 \end{bmatrix}\):
+\[
+\boxed{
+\tilde{w} \leftarrow \tilde{w} - \eta (p_i - y_i) \tilde{x}_i.
+}
+\]
+
+\subsubsection*{Mini-Batch SGD}
+For mini-batch \(B\),
+\[
+g_B = \sum_{n\in B} (p_n-y_n)x_n, \qquad 
+g_{b,B} = \sum_{n\in B} (p_n - y_n).
+\]
+Update:
+\[
+w \leftarrow w - \eta g_B, \qquad 
+b \leftarrow b - \eta g_{b,B}.
+\]
+Common practice: use averaged gradients \(\tfrac{1}{|B|}g_B\).
+
+\subsubsection*{Regularized SGD (L2)}
+\[
+w \leftarrow w - \eta \big((p_i-y_i)x_i + \lambda w\big).
+\]
+
+\subsection{Final Quick-Reference Summary}
+\[
+\boxed{
+\text{Batch GD: }\;
+\tilde{w} \leftarrow \tilde{w}
+- \eta \tilde{X}^\top \big( \sigma(\tilde{X}\tilde{w}) - y \big)
+}
+\]
+\[
+\boxed{
+\text{SGD (sample } i):\;
+\tilde{w} \leftarrow \tilde{w}
+- \eta (\sigma(\tilde{x}_i^\top\tilde{w}) - y_i)\tilde{x}_i
+}
+\]
+\[
+\boxed{
+\text{Mini-batch } B:\;
+\tilde{w} \leftarrow \tilde{w}
+- \eta\,\frac{1}{|B|}\,\tilde{X}_B^\top\!\big(\sigma(\tilde{X}_B\tilde{w}) - y_B\big)
+}
+\]
+
+% ============================================================
+% ============================================================
+\section{Learning Rate Stability}
+
+\subsection{Logistic Loss and Gradient Descent}
+The logistic loss is
+\[
+L(w)
+= -\sum_{n=1}^N \left[ y_n \log p_n + (1-y_n)\log(1-p_n) \right],
+\qquad
+p_n = \sigma(w^\top x_n),
+\]
+with gradient
+\[
+\nabla L(w) = X^\top (p - y).
+\]
+Batch gradient descent update:
+\[
+w^{(t+1)} = w^{(t)} - \eta\, \nabla L(w^{(t)}).
+\]
+
+\subsection{Hessian of the Logistic Loss}
+The Hessian is
+\[
+H(w)=\nabla^2 L(w) = X^\top R X,
+\qquad
+R = \mathrm{diag}\big(p_n(1-p_n)\big).
+\]
+Since
+\[
+0 < p_n(1-p_n) \le \frac{1}{4},
+\]
+we have
+\[
+0 \preceq R \preceq \tfrac{1}{4}I,
+\qquad
+H(w) \preceq \tfrac{1}{4}X^\top X.
+\]
+Thus the largest eigenvalue satisfies
+\[
+\lambda_{\max}(H(w)) 
+\le \frac{1}{4}\lambda_{\max}(X^\top X).
+\]
+Define the upper bound
+\[
+L = \frac{1}{4}\lambda_{\max}(X^\top X).
+\]
+
+\subsection{Stability Condition for Gradient Descent}
+Gradient descent on a smooth convex function with Lipschitz gradient constant \(L\) is stable only if
+\[
+0 < \eta < \frac{2}{L}.
+\]
+Thus for logistic regression:
+\[
+\boxed{
+\eta < \frac{8}{\lambda_{\max}(X^\top X)}
+}
+\]
+is required for convergence.
+
+If the condition is violated:
+\[
+|1 - \eta\lambda_{\max}(H)| > 1
+\quad\Rightarrow\quad
+\text{gradient descent diverges}.
+\]
+
+\subsection{Error Dynamics Near the Optimum}
+Approximate the loss near \(w^*\):
+\[
+L(w) \approx L(w^*) 
++ \frac{1}{2}(w-w^*)^\top H(w^*)(w-w^*).
+\]
+Let
+\[
+e_t = w^{(t)} - w^*.
+\]
+Then the update becomes
+\[
+e_{t+1}
+= (I - \eta H)e_t.
+\]
+Convergence requires
+\[
+\rho(I - \eta H) < 1
+\quad\Longleftrightarrow\quad
+|1 - \eta\lambda_i(H)| < 1\ \forall i,
+\]
+leading to the condition
+\[
+\boxed{
+0 < \eta < \frac{2}{\lambda_{\max}(H)}
+}.
+\]
+
+If \(\eta > \tfrac{2}{\lambda_{\max}(H)}\), then
+\[
+|e_{t+1}| > |e_t|,
+\]
+so parameters diverge.
+
+\subsection{Divergence Behavior Specific to Logistic Regression}
+If \(\eta\) is too large:
+\[
+w_{t+1} = w_t - \eta X^\top(p-y)
+\]
+becomes too large in magnitude.  
+Then
+\[
+|Xw| \to \infty
+\quad\Rightarrow\quad
+p = \sigma(Xw) \to 0 \text{ or } 1.
+\]
+Since
+\[
+-\log p \to \infty,\qquad -\log(1-p)\to\infty,
+\]
+the loss satisfies
+\[
+L(w_{t+1}) \to \infty.
+\]
+
+\subsection{Final Summary}
+\begin{itemize}
+    \item Logistic loss curvature bound:
+    \[
+    \lambda_{\max}(H(w)) \le \tfrac{1}{4}\lambda_{\max}(X^\top X).
+    \]
+    \item Stability condition:
+    \[
+    0 < \eta < \frac{2}{\lambda_{\max}(H)}.
+    \]
+    \item Too large learning rate:
+    \[
+    |w_{t+1} - w^*| > |w_t - w^*| \Rightarrow \text{divergence}.
+    \]
+    \item Divergence amplifies logits:
+    \[
+    |Xw| \to \infty \Rightarrow p \to 0 \text{ or } 1 \Rightarrow L \to \infty.
+    \]
+\end{itemize}
+
+% ============================================================
+% ============================================================
+\section{Linearity of Decision Boundary}
+
+\subsection{Binary Logistic Regression}
+The model is
+\[
+p(y=1\mid x)=\sigma(w^\top x + b), 
+\qquad 
+\sigma(z)=\frac{1}{1+e^{-z}}.
+\]
+
+The decision rule assigns class \(1\) when
+\[
+p(y=1\mid x)\ge 0.5.
+\]
+
+Since \(\sigma(z)=0.5 \iff z=0\), the decision boundary is obtained by solving
+\[
+\sigma(w^\top x + b)=0.5 
+\quad\Longleftrightarrow\quad
+w^\top x + b = 0.
+\]
+
+Thus the decision boundary is the hyperplane
+\[
+\boxed{
+\{x \in \mathbb{R}^d : w^\top x + b = 0\}.
+}
+\]
+
+\subsection{Geometric Interpretation}
+\begin{itemize}
+    \item The normal vector of the boundary is \(w\).
+    \item Signed distance of \(x\) to the boundary:
+    \[
+    \frac{w^\top x + b}{\|w\|}.
+    \]
+    \item Scaling \((w,b)\) by any \(c>0\):
+    \[
+    (cw)^\top x + cb = c(w^\top x + b)=0,
+    \]
+    leaves the boundary unchanged.
+\end{itemize}
+
+\subsection{Multiclass Extension}
+For softmax regression, class scores are \(s_k(x)=w_k^\top x + b_k\).  
+The boundary between classes \(i\) and \(j\) satisfies
+\[
+s_i(x)=s_j(x)
+\quad\Longleftrightarrow\quad
+(w_i - w_j)^\top x + (b_i - b_j)=0,
+\]
+which is also a hyperplane.
+
+\subsection{Summary}
+\[
+\boxed{
+\text{Logistic regression always yields an affine (hyperplane) decision boundary.}
+}
+\]
+
+% ============================================================
+% ============================================================
+\section{SVM and Logistic Crossover}
+
+\subsection{Statement of the question}
+When do L2-regularized logistic regression and (hard- or soft-margin) SVM produce the same separating hyperplane (up to scaling)?
+
+\subsection{1. Exact equality under strong conditions}
+Let logistic regression solution with L2 penalty be
+\[
+w_\lambda = \arg\min_{w,b}\;\sum_{n=1}^N \log\bigl(1+e^{-y_n(w^\top x_n + b)}\bigr) \;+\; \tfrac{\lambda}{2}\|w\|^2.
+\]
+Let \((w_{\text{SVM}},b_{\text{SVM}})\) be the hard-margin SVM maximum-margin solution:
+\[
+\min_{w,b}\ \tfrac{1}{2}\|w\|^2
+\quad\text{s.t.}\quad y_n(w^\top x_n + b)\ge 1\quad\forall n.
+\]
+If the data are linearly separable and the maximum-margin direction is unique, then
+\[
+\frac{w_\lambda}{\|w_\lambda\|}
+\;\longrightarrow\;
+\frac{w_{\text{SVM}}}{\|w_{\text{SVM}}\|}
+\qquad\text{as }\lambda\to 0^+,
+\]
+so L2-regularized logistic regression converges to the SVM separating direction (same hyperplane up to scale).
+
+\subsection{2. Asymptotic / loss-level intuition}
+Define per-example margins \(z=y(w^\top x+b)\). Two losses:
+\[
+\ell_{\text{log}}(z)=\log(1+e^{-z}),\qquad
+\ell_{\text{hinge}}(z)=\max(0,1-z).
+\]
+For large positive \(z\),
+\[
+\ell_{\text{log}}(z)\approx e^{-z}\to 0,\qquad \ell_{\text{hinge}}(z)=0.
+\]
+When \(\lambda\to 0\) (so \(\|w\|\) grows), most well-separated points produce very large \(z\) and negligible contribution; only points near the margin (support-vector-like points) dominate the logistic objective. Hence the effective optimization concentrates on margin-critical points, yielding the maximum-margin direction.
+
+\subsection{3. Geometric condition (margin alignment)}
+Logistic and SVM align when:
+\begin{enumerate}
+  \item The data are \emph{linearly separable}.
+  \item The maximum-margin hyperplane is \emph{unique} (no degenerate set of support vectors defining multiple directions).
+  \item Logistic regression is L2-regularized with regularization parameter \(\lambda\) taken sufficiently small.
+  \item The solution enters a regime where the sigmoid is saturated for non-critical points and only near-margin points influence the objective.
+\end{enumerate}
+Under these geometric conditions the logistic solution approaches the SVM solution in direction.
+
+\subsection{4. When they do \emph{not} coincide}
+The decision boundaries differ when:
+\begin{itemize}
+  \item Data are not linearly separable (SVM soft-margin vs logistic probability fit).
+  \item Logistic regularization \(\lambda\) is not vanishingly small.
+  \item SVM uses a soft-margin parameter \(C\) that does not match LR's effective regularization.
+  \item Class-conditional distributions overlap and probabilistic modelling (LR) is preferred.
+\end{itemize}
+
+\subsection{5. Compact exam-ready summary}
+\[
+\boxed{ 
+\text{L2-logistic regression } \xrightarrow[\lambda\to 0^+]{} \text{ maximum-margin solution }
+\;=\; \text{hard-margin SVM (direction-wise).}
+}
+\]
+
+% ============================================================
+% ============================================================
+\section{Failure of Logistic Regression}
+
+\subsection{1. When does logistic regression fail (geometric view)?}
+Logistic regression models a linear decision surface
+\[
+w^\top x + b = 0.
+\]
+It fails geometrically in several cases.
+
+\subsubsection*{(A) Linearly separable data (paradox)}
+If \((w_0,b_0)\) satisfies
+\[
+y_i\,(w_0^\top x_i + b_0) > 0 \quad\forall i,
+\]
+then scaling \(w\leftarrow c w_0,\ b\leftarrow c b_0\) with \(c\to\infty\) yields
+\[
+p_i=\sigma(c\,y_i(w_0^\top x_i + b_0))\to 1,
+\qquad \ell(w)=\sum_i\log\sigma(c m_i)\to 0,
+\]
+but no finite \((w,b)\) attains \(\ell=0\).  
+\[
+\boxed{\text{Logistic regression has no finite MLE under perfect separability.}}
+\]
+Geometric consequences: \(\|w\|\to\infty\), same boundary but diverging parameters, optimization unstable without regularization.
+
+\subsubsection*{(B) Nonlinear true boundary}
+If the true separator is nonlinear (circle, XOR, spiral), any affine model \(w^\top x + b\) cannot fit the geometry:
+\[
+\text{Model class too simple} \quad\Rightarrow\quad \text{systematic failure}.
+\]
+
+\subsubsection*{(C) Extreme outliers}
+Far-away outliers can pivot the hyperplane to accommodate them, flattening the effective separator and harming generalization.
+
+\subsection{2. Collinearity / rank deficiency}
+If features are linearly dependent, e.g.\ \(x_2=\alpha x_1\), then \(\operatorname{rank}(X)<d\).
+
+\paragraph{Geometric implication}
+Many weight vectors map to the same hyperplane: different \(w\) differing by a vector in \(\ker(X)\) give identical predictions. Hence the decision boundary is identifiable, but the parameter vector is not.
+
+\paragraph{Mathematical consequences}
+Hessian
+\[
+H = X^\top R X,\qquad R=\operatorname{diag}(p_n(1-p_n))
+\]
+satisfies \(\operatorname{rank}(H)\le\operatorname{rank}(X)<d\), so \(H\) can be singular. Consequences:
+\begin{itemize}
+  \item Gradient descent still moves in \(\operatorname{col}(X)\) and can converge to a solution subspace.
+  \item Newton's method may fail (no \(H^{-1}\)).
+  \item Multiple \(w\) achieve identical log-likelihood \(\Rightarrow\) non-unique solution, large coefficient variance.
+\end{itemize}
+
+\paragraph{Geometric picture}
+Features lying on the same direction allow rotating \(w\) within the nullspace without changing predictions; coefficients can blow up with canceling signs.
+
+\subsection{3. How regularization fixes these failures}
+Adding \(L_2\) regularization yields a modified Hessian \(H + \lambda I\) which is positive definite for \(\lambda>0\), restoring invertibility and uniqueness:
+\[
+H + \lambda I \succ 0.
+\]
+Regularization bounds \(\|w\|\) and prevents blow-up under separability.
+
+\subsection{4. Summary}
+\begin{itemize}
+  \item \textbf{Separable data:} no finite MLE, \(\|w\|\to\infty\) (regularize to fix).
+  \item \textbf{Nonlinear true boundary:} model misspecification — use feature maps.
+  \item \textbf{Outliers:} distort hyperplane, harm generalization.
+  \item \textbf{Collinearity:} decision boundary learnable, parameters not unique; regularization restores identifiability.
+\end{itemize}
+
+% ============================================================
+% ============================================================
+\section{L2 Regularisation}
+
+\subsection{1. Loss definition}
+Given data \(X\in\mathbb{R}^{N\times d}\) (rows \(x_n^\top\)), labels \(y\in\{0,1\}^N\), parameters
+\(w\in\mathbb{R}^d\), bias \(b\in\mathbb{R}\), define
+\[
+z = Xw + b\mathbf{1}, \qquad p = \sigma(z).
+\]
+The (unregularised) negative log-likelihood is
+\[
+\mathcal L_{\mathrm{NLL}}(w,b)
+= -\sum_{n=1}^N \left[y_n\log p_n + (1-y_n)\log(1-p_n)\right]
+= -y^\top\log p - (1-y)^\top\log(1-p).
+\]
+Adding an \(L_2\) penalty on the weights (not on the bias):
+\[
+\boxed{
+\mathcal L_\lambda(w,b)
+= \mathcal L_{\mathrm{NLL}}(w,b) + \frac{\lambda}{2}\|w\|_2^2.
+}
+\]
+
+\subsection{2. Useful identities}
+For each \(n\),
+\[
+\frac{\partial p_n}{\partial z_n} = p_n(1-p_n), 
+\qquad
+\frac{\partial \mathcal L_{\mathrm{NLL}}}{\partial z_n} = p_n - y_n.
+\]
+Stacked form:
+\[
+\nabla_z \mathcal L_{\mathrm{NLL}} = p - y.
+\]
+
+\subsection{3. Vector gradients}
+Using \(z=Xw + b\mathbf{1}\), the gradients of the regularised loss are:
+\[
+\boxed{
+\nabla_w \mathcal L_\lambda = X^\top(p-y) + \lambda w
+}
+\]
+\[
+\boxed{
+\frac{\partial \mathcal L_\lambda}{\partial b} = \mathbf{1}^\top(p-y)
+}
+\]
+
+\subsection{4. Per-sample component form}
+For a single example \((x_n,y_n)\),
+\[
+\nabla_w \ell_n = (p_n-y_n)x_n,
+\qquad
+\frac{\partial \ell_n}{\partial b} = p_n - y_n.
+\]
+Thus,
+\[
+\nabla_w \mathcal L_\lambda = \sum_{n=1}^N (p_n-y_n)x_n + \lambda w,
+\qquad
+\frac{\partial \mathcal L_\lambda}{\partial b} = \sum_{n=1}^N (p_n-y_n).
+\]
+
+\subsection{5. Augmented notation (if bias also regularised)}
+If we define \(\tilde X = [X\ \mathbf{1}]\), \(\tilde w = [w^\top\ b]^\top\),  
+and use penalty \(\tfrac{\lambda}{2}\|\tilde w\|^2\), then
+\[
+\nabla_{\tilde w}\mathcal L_\lambda = \tilde X^\top(p-y) + \lambda \tilde w.
+\]
+
+\subsection{6. Final boxed results}
+\[
+\boxed{
+\mathcal L_\lambda(w,b)
+= -\sum_{n=1}^N \big[y_n\log p_n + (1-y_n)\log(1-p_n)\big]
++ \frac{\lambda}{2}\|w\|^2
+}
+\]
+\[
+\boxed{
+\nabla_w \mathcal L_\lambda = X^\top(p-y) + \lambda w,
+\qquad
+\frac{\partial \mathcal L_\lambda}{\partial b} = \mathbf{1}^\top(p-y)
+}
+\]
+
+% ============================================================
+% ============================================================
+\section{L1 Regularisation and Gradient}
+
+\subsection{1. Loss definition}
+Given \(X\in\mathbb{R}^{N\times d}\) (rows \(x_n^\top\)), labels \(y\in\{0,1\}^N\), parameters \(w\in\mathbb{R}^d\) and bias \(b\in\mathbb{R}\) (bias not regularized), define
+\[
+z = Xw + b,\qquad p=\sigma(z)\quad(\text{elementwise}).
+\]
+The L\(_1\)-regularized logistic loss is
+\[
+\boxed{%
+\mathcal L_{\lambda}(w,b)
+= -\sum_{n=1}^N\bigl[y_n\log p_n + (1-y_n)\log(1-p_n)\bigr] + \lambda\|w\|_1,
+}
+\]
+where \(\|w\|_1=\sum_{j=1}^d |w_j|\) and \(\lambda\ge0\).
+
+\subsection{2. Gradient of smooth part}
+The smooth (differentiable) part is the negative log-likelihood
+\[
+\mathcal L_{\mathrm{NLL}}(w,b) = -\sum_{n=1}^N\bigl[y_n\log p_n + (1-y_n)\log(1-p_n)\bigr].
+\]
+Its gradient is
+\[
+\nabla_w \mathcal L_{\mathrm{NLL}} = X^\top(p-y),\qquad
+\frac{\partial \mathcal L_{\mathrm{NLL}}}{\partial b} = \mathbf{1}^\top(p-y).
+\]
+
+\subsection{3. Subgradient of the \(\ell_1\) term}
+The subdifferential of \(\|w\|_1\) is
+\[
+\partial\|w\|_1 = \{s\in\mathbb{R}^d:\ s_j=\operatorname{sign}(w_j)\ \text{if }w_j\neq0,\quad s_j\in[-1,1]\ \text{if }w_j=0\}.
+\]
+Componentwise:
+\[
+\partial_{w_j}|w_j| =
+\begin{cases}
++1, & w_j>0,\\[4pt]
+-1, & w_j<0,\\[4pt]
+[-1,1], & w_j=0.
+\end{cases}
+\]
+
+\subsection{4. Subgradient of the full objective (vector form)}
+By the sum rule for subgradients,
+\[
+\partial_w \mathcal L_{\lambda}(w,b)
+= X^\top(p-y) + \lambda\,\partial\|w\|_1,
+\qquad
+\frac{\partial \mathcal L_{\lambda}}{\partial b} = \mathbf{1}^\top(p-y).
+\]
+Thus any subgradient has the form
+\[
+g = X^\top(p-y) + \lambda s,\qquad s\in\partial\|w\|_1.
+\]
+
+\subsection{5. Componentwise subgradient (explicit)}
+For each coordinate \(j=1,\dots,d\),
+\[
+\partial_{w_j}\mathcal L_{\lambda}
+= x_j^\top(p-y) + \lambda\,\partial_{w_j}|w_j|,
+\]
+i.e.
+\[
+\partial_{w_j}\mathcal L_{\lambda} =
+\begin{cases}
+x_j^\top(p-y) + \lambda\,\operatorname{sign}(w_j), & w_j\neq 0,\\[6pt]
+x_j^\top(p-y) + \lambda\,[-1,1], & w_j = 0,
+\end{cases}
+\]
+where \(x_j\) denotes column \(j\) of \(X\).
+
+\subsection{6. Optimality (KKT) conditions}
+A vector \(w^*\) is optimal iff \(0\in\partial_w\mathcal L_{\lambda}(w^*,b^*)\) and \(\mathbf{1}^\top(p^*-y)=0\). Componentwise:
+\begin{itemize}
+  \item If \(w_j^*\neq 0\): \(\;x_j^\top(p^*-y) + \lambda\,\operatorname{sign}(w_j^*) = 0.\)
+  \item If \(w_j^*=0\): \(\;x_j^\top(p^*-y) \in [-\lambda,\lambda].\)
+\end{itemize}
+Hence coordinates with \(|x_j^\top(p^*-y)|<\lambda\) must be exactly zero (sparsity condition).
+
+\subsection{7. Proximal (ISTA) update — soft-thresholding}
+A practical algorithm (proximal gradient / ISTA) for minimizing \(\mathcal L_\lambda\):
+\begin{enumerate}
+  \item Gradient step on smooth part:
+  \[
+  u^{(t)} = w^{(t)} - \eta\,X^\top\bigl(\sigma(Xw^{(t)}+b)-y\bigr).
+  \]
+  \item Proximal (soft-thresholding) step:
+  \[
+  w^{(t+1)} = \mathcal S_{\eta\lambda}\bigl(u^{(t)}\bigr),
+  \]
+  where \(\mathcal S_{\tau}\) acts coordinatewise:
+  \[
+  \bigl(\mathcal S_{\tau}(u)\bigr)_j = \operatorname{sign}(u_j)\,\max\{|u_j|-\tau,\,0\}.
+  \]
+\end{enumerate}
+This yields sparse solutions and enforces the KKT conditions in the limit.
+
+\subsection{8. Summary (boxed)}
+\[
+\boxed{%
+\mathcal L_{\lambda}(w,b)
+= -\sum_{n=1}^N\bigl[y_n\log p_n + (1-y_n)\log(1-p_n)\bigr] + \lambda\|w\|_1
+}
+\]
+\[
+\boxed{%
+\partial_w \mathcal L_{\lambda}(w,b)
+= X^\top(p-y) + \lambda\,\partial\|w\|_1,\qquad
+\frac{\partial \mathcal L_{\lambda}}{\partial b} = \mathbf{1}^\top(p-y)
+}
+\]
+Componentwise optimality:
+\[
+w_j^*\neq 0 \Rightarrow x_j^\top(p^*-y)+\lambda\operatorname{sign}(w_j^*)=0,
+\quad
+w_j^*=0 \Rightarrow x_j^\top(p^*-y)\in[-\lambda,\lambda].
+\]
+
+% ============================================================
+% ============================================================
+\section{Lambda Tends to Infinity}
+
+\subsection{1. L2-Regularised Logistic Regression}
+
+Consider the L2-regularised logistic loss
+\[
+\mathcal L_\lambda(w,b)
+= -\sum_{n=1}^N\!\left[y_n\log p_n + (1-y_n)\log(1-p_n)\right]
++ \frac{\lambda}{2}\|w\|_2^2,
+\qquad p_n=\sigma(w^\top x_n + b).
+\]
+
+\subsubsection*{A. Behaviour of \boldmath$w_\lambda$ as $\lambda\to\infty$}
+As \(\lambda\) grows,
+\[
+\mathcal L_\lambda(w,b) \approx \frac{\lambda}{2}\|w\|_2^2,
+\]
+so minimisation forces
+\[
+w_\lambda \to 0.
+\]
+The bias \(b\) (not regularised) converges to some finite constant:
+\[
+b_\lambda \to b_{\infty}\in\mathbb{R}.
+\]
+
+\subsubsection*{B. Effect on linear score and probabilities}
+
+\[
+z = w_\lambda^\top x + b_\lambda \longrightarrow b_{\infty},
+\qquad
+p(x)=\sigma(z)\to \sigma(b_{\infty})=\text{constant}.
+\]
+
+\subsubsection*{C. Effect on the decision boundary}
+
+The decision boundary
+\[
+w_\lambda^\top x + b_\lambda = 0
+\]
+collapses as \(w_\lambda\to 0\). No finite separating hyperplane remains.
+
+\[
+\boxed{\text{As }\lambda\to\infty,\ \text{L2-logistic regression predicts a constant class (no boundary).}}
+\]
+
+% ------------------------------------------------------------
+\subsection{2. L1-Regularised Logistic Regression}
+
+The L1-regularised loss
+\[
+\mathcal L_\lambda(w,b)
+= -\sum_{n=1}^N\!\left[y_n\log p_n + (1-y_n)\log(1-p_n)\right]
++ \lambda\|w\|_1
+\]
+behaves similarly but more sharply.
+
+\subsubsection*{A. Behaviour as $\lambda\to\infty$}
+
+The penalty \(\lambda\|w\|_1\) dominates:
+\[
+w_\lambda \to 0.
+\]
+For sufficiently large \(\lambda\), the optimal solution becomes exactly
+\[
+w_\lambda = 0.
+\]
+
+\subsubsection*{B. Effect on boundary}
+
+With \(w_\lambda = 0\),
+\[
+w_\lambda^\top x + b_\lambda = b_\lambda,
+\]
+hence predictions become constant:
+\[
+p(x)=\sigma(b_\lambda).
+\]
+
+\[
+\boxed{\text{L1 with }\lambda\to\infty\ \Rightarrow\ w_\lambda=0;\ \text{decision boundary disappears}.}
+\]
+
+% ------------------------------------------------------------
+\subsection{3. Unified Result}
+
+For both L1 and L2 regularisation:
+\[
+w_\lambda \to 0,\qquad
+w_\lambda^\top x + b_\lambda \to b_\lambda,
+\qquad
+p(x) = \sigma(b_\lambda)=\text{constant}.
+\]
+
+Thus,
+\[
+\boxed{
+\text{As }\lambda\to\infty,\ \text{logistic regression collapses to a constant predictor and no decision boundary exists.}
+}
+\]
+
+% ============================================================
+% ============================================================
+\section{Softmax Function and Its Gradient}
+
+\subsection{1. Definition}
+For logits \(z\in\mathbb{R}^K\), the softmax function is
+\[
+\sigma_i(z)
+= \frac{e^{z_i}}{\sum_{k=1}^K e^{z_k}},
+\qquad i=1,\dots,K.
+\]
+Let \(p=\sigma(z)\), so that \(p_i>0\) and \(\sum_i p_i = 1\).
+
+% ------------------------------------------------------------
+\subsection{2. Jacobian of Softmax}
+Write \(S = \sum_k e^{z_k}\). Then
+\[
+\frac{\partial \sigma_i}{\partial z_j}
+= \frac{e^{z_i}}{S}\Big(\delta_{ij} - \frac{e^{z_j}}{S}\Big)
+= \sigma_i(\delta_{ij} - \sigma_j).
+\]
+Hence the Jacobian matrix \(J\in\mathbb{R}^{K\times K}\) is
+\[
+\boxed{
+J = \operatorname{diag}(p) - p\,p^\top.
+}
+\]
+
+% ------------------------------------------------------------
+\subsection{3. Gradient of Cross-Entropy w.r.t. Logits}
+For one-hot label \(y\in\{0,1\}^K\), define
+\[
+\mathcal L(z) = -\sum_{i=1}^K y_i \log \sigma_i(z).
+\]
+Using the Jacobian and the chain rule,
+\[
+\boxed{
+\nabla_z \,\mathcal L = p - y.
+}
+\]
+Thus the gradient w.r.t.\ each logit \(z_j\) is \(\sigma_j - y_j\).
+
+% ------------------------------------------------------------
+\subsection{4. Gradient in Softmax Regression (Linear Model)}
+Let logits be \(Z = XW + \mathbf{1}b^\top\) with:
+\[
+X\in\mathbb{R}^{N\times d},\quad
+W\in\mathbb{R}^{d\times K},\quad
+b\in\mathbb{R}^K.
+\]
+Let \(Y\in\mathbb{R}^{N\times K}\) be one-hot labels and
+\(P = \mathrm{softmax}(Z)\) applied rowwise.
+
+The cross-entropy loss
+\[
+\mathcal L(W,b)
+= -\sum_{n=1}^N \sum_{k=1}^K Y_{nk}\log P_{nk}
+\]
+has gradients
+\[
+\boxed{
+\nabla_W \mathcal L = X^\top (P - Y), \qquad
+\nabla_b \mathcal L = \mathbf{1}^\top (P - Y).
+}
+\]
+
+% ------------------------------------------------------------
+\subsection{5. Small Worked Example (Gradient Computation)}
+Consider a 3-class classifier (\(K=3\)) and a single example \(x\in\mathbb{R}^d\) with logits
+\[
+z =
+\begin{bmatrix}
+2\\
+1\\
+0
+\end{bmatrix},
+\qquad
+y =
+\begin{bmatrix}
+0\\
+1\\
+0
+\end{bmatrix}.
+\]
+
+\paragraph{Step 1: Compute softmax.}
+\[
+e^z = 
+\begin{bmatrix}
+e^2\\
+e^1\\
+e^0
+\end{bmatrix}
+=
+\begin{bmatrix}
+7.389\\
+2.718\\
+1
+\end{bmatrix},
+\qquad
+S = 7.389 + 2.718 + 1 = 11.107.
+\]
+\[
+p = \frac{e^z}{S}
+=
+\begin{bmatrix}
+0.665\\
+0.245\\
+0.090
+\end{bmatrix}.
+\]
+
+\paragraph{Step 2: Gradient w.r.t.\ logits.}
+\[
+\nabla_z\mathcal L = p - y
+=
+\begin{bmatrix}
+0.665\\
+0.245\\
+0.090
+\end{bmatrix}
+-
+\begin{bmatrix}
+0\\
+1\\
+0
+\end{bmatrix}
+=
+\boxed{
+\begin{bmatrix}
+0.665\\
+-0.755\\
+0.090
+\end{bmatrix}.
+}
+\]
+
+Thus the gradient on the three logits is computed directly as \(p - y\).
+
+\paragraph{Step 3: Gradient w.r.t.\ weights (for this single example).}
+If logits are \(z = W^\top x + b\), then
+\[
+\nabla_W \mathcal L = x\,(p-y)^\top.
+\]
+
+% ============================================================
+
+
+
+\end{multicols}
+
 \end{document}
