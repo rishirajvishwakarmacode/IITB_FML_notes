@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1763193479.93155 "d:/Important Subjects/Machine Learning/Notes/Linear Regression/Linearregression.tex" "Linearregression.pdf" "Linearregression" 1763193483.25359 0
+["pdflatex"] 1763195573.28674 "d:/Important Subjects/Machine Learning/Notes/Linear Regression/Linearregression.tex" "Linearregression.pdf" "Linearregression" 1763195576.49911 0
   "C:/Users/DELL/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1762976558 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/DELL/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcss1000.pk" 1762977604 10628 5ab3c4f7895e89c66951b20d9f5736ce ""
   "C:/Users/DELL/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1761304206 13307671 32d44beb727c17d1343a01904f97361c ""
@@ -271,10 +271,10 @@
   "C:/latex/MiKTeX/tex/latex/trimspaces/trimspaces.sty" 1253169183 1380 971a51b00a14503ddf754cab24c3f209 ""
   "C:/latex/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/latex/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
-  "Linearregression.aux" 1763193482 30450 8ff4ca894eb12fda02982f91aebd5a81 "pdflatex"
-  "Linearregression.out" 1763193482 27924 4aad5dd017cc92aac7f997c8dc262ba9 "pdflatex"
-  "Linearregression.tex" 1763193474 212669 d6d690e164cb57cb9e2d051852fa8438 ""
-  "d:/Important Subjects/Machine Learning/Notes/Linear Regression/Linearregression.tex" 1763193474 212669 d6d690e164cb57cb9e2d051852fa8438 ""
+  "Linearregression.aux" 1763195576 30552 c4bce520c1cedd006ed0c5346815d48d "pdflatex"
+  "Linearregression.out" 1763195576 27924 4aad5dd017cc92aac7f997c8dc262ba9 "pdflatex"
+  "Linearregression.tex" 1763195566 221272 f97f6da1750430a0d4c733fae8d26708 ""
+  "d:/Important Subjects/Machine Learning/Notes/Linear Regression/Linearregression.tex" 1763195566 221272 f97f6da1750430a0d4c733fae8d26708 ""
   (generated)
   "Linearregression.aux"
   "Linearregression.log"

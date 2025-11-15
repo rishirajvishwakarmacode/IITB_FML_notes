@@ -4587,6 +4587,8 @@ Expand and collect terms:
 % ============================================================
 % ============================================================
 % ============================================================
+
+\newpage
 \section*{Weight vector}
 
 The optimal weight vector $\mathbf{w}$ can be expressed entirely in terms of the data points $\mathbf{x}_i$ and the dual variables $\alpha_i$.
@@ -5527,6 +5529,133 @@ The model simply learns a different bias term $b = (b' - \mathbf{w}^\top \bar{\p
 % ============================================================
 
 % ============================================================
+% ============================================================
+\section*{Kernelised PCA}
+
+We derive Kernel PCA (KPCA) from first principles.
+\paragraph{Setup and Notation:}
+\begin{itemize}
+    \item Input points: $\mathbf{x}_1, \dots, \mathbf{x}_n \in \mathcal{X}$.
+    \item Feature map: $\phi: \mathcal{X} \to \mathcal{H}$ (a Hilbert space).
+    \item Kernel: $K(\mathbf{x}, \mathbf{z}) = \langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle$.
+    \item Feature matrix: $\mathbf{\Phi} = [\phi(\mathbf{x}_1), \dots, \phi(\mathbf{x}_n)]$ (data points as columns in $\mathcal{H}$).
+    \item Centering matrix: $\mathbf{H} = \mathbf{I}_n - \frac{1}{n}\mathbf{1}\mathbf{1}^\top$.
+    \item Centered features: $\bar{\phi} = \frac{1}{n}\sum_j \phi(\mathbf{x}_j)$. The centered map is $\phi_c(\mathbf{x}_i) = \phi(\mathbf{x}_i) - \bar{\phi}$.
+    \item Centered feature matrix: $\mathbf{\Phi}_c = \mathbf{\Phi} \mathbf{H}$.
+    \item Gram matrix: $\mathbf{K}$ with $K_{ij} = K(\mathbf{x}_i, \mathbf{x}_j)$.
+    \item Centered Gram matrix: $\mathbf{K}_c = \mathbf{H} \mathbf{K} \mathbf{H}$.
+\end{itemize}
+
+\subsection*{1. KPCA Objective Derivation}
+Classical PCA finds directions $\mathbf{v}$ (unit norm) that maximize the variance of projected data. We do the same in the feature space $\mathcal{H}$, using centered features.
+We want to find $\mathbf{v} \in \mathcal{H}$ that maximizes the variance of the projections $\langle \mathbf{v}, \phi_c(\mathbf{x}) \rangle$:
+\begin{align*}
+\text{maximize}_{\mathbf{v} \in \mathcal{H}} \quad & \frac{1}{n}\sum_{i=1}^n \big(\langle \mathbf{v}, \phi_c(\mathbf{x}_i) \rangle \big)^2 \\[4pt]
+\text{s.t.} \quad & \|\mathbf{v}\|_{\mathcal{H}} = 1.
+\end{align*}
+The empirical covariance operator $C: \mathcal{H} \to \mathcal{H}$ is:
+\[
+C = \frac{1}{n}\sum_{i=1}^n \phi_c(\mathbf{x}_i) \otimes \phi_c(\mathbf{x}_i)
+\]
+The objective is $\langle \mathbf{v}, C \mathbf{v} \rangle$. This is a standard eigenvalue problem in $\mathcal{H}$:
+\[
+C \mathbf{v} = \lambda \mathbf{v}
+\]
+The principal components are the eigenvectors $\mathbf{v}$ sorted by their eigenvalues $\lambda$.
+
+\subsection*{2. Reduction to a Finite Eigenproblem}
+We cannot solve $C \mathbf{v} = \lambda \mathbf{v}$ directly if $\mathcal{H}$ is infinite-dimensional. However, any solution $\mathbf{v}$ must lie in the span of the training features, $\{\phi_c(\mathbf{x}_i)\}$.
+We can therefore represent $\mathbf{v}$ as:
+\[
+\mathbf{v} = \sum_{i=1}^n \alpha_i \phi_c(\mathbf{x}_i) = \mathbf{\Phi}_c \boldsymbol{\alpha}
+\]
+for some coefficient vector $\boldsymbol{\alpha} \in \mathbb{R}^n$. Substitute this into the eigenproblem:
+\begin{align*}
+C \mathbf{v} &= \lambda \mathbf{v} \\
+\frac{1}{n}\sum_{i=1}^n \phi_c(\mathbf{x}_i) \langle \phi_c(\mathbf{x}_i), \mathbf{v} \rangle &= \lambda \mathbf{v} \\
+\frac{1}{n} \mathbf{\Phi}_c (\mathbf{\Phi}_c^\top \mathbf{v}) &= \lambda (\mathbf{\Phi}_c \boldsymbol{\alpha})
+\end{align*}
+The term $\mathbf{\Phi}_c^\top \mathbf{v} = \mathbf{\Phi}_c^\top (\mathbf{\Phi}_c \boldsymbol{\alpha}) = (\mathbf{\Phi}_c^\top \mathbf{\Phi}_c) \boldsymbol{\alpha} = \mathbf{K}_c \boldsymbol{\alpha}$.
+(Note: $(\mathbf{\Phi}_c^\top \mathbf{\Phi}_c)_{ij} = \langle \phi_c(\mathbf{x}_i), \phi_c(\mathbf{x}_j) \rangle = (\mathbf{K}_c)_{ij}$).
+Substituting this back in:
+\[
+\frac{1}{n} \mathbf{\Phi}_c \mathbf{K}_c \boldsymbol{\alpha} = \lambda \mathbf{\Phi}_c \boldsymbol{\alpha}
+\]
+Left-multiply by $\mathbf{\Phi}_c^\top$ (mapping from $\mathcal{H}$ to $\mathbb{R}^n$):
+\[
+\frac{1}{n} (\mathbf{\Phi}_c^\top \mathbf{\Phi}_c) \mathbf{K}_c \boldsymbol{\alpha} = \lambda (\mathbf{\Phi}_c^\top \mathbf{\Phi}_c) \boldsymbol{\alpha}
+\]
+\[
+\frac{1}{n} \mathbf{K}_c^2 \boldsymbol{\alpha} = \lambda \mathbf{K}_c \boldsymbol{\alpha}
+\]
+For eigenvectors with $\lambda > 0$, we can cancel one factor of $\mathbf{K}_c$ (restricting to its column space):
+\begin{formula}[KPCA Eigenproblem]
+\[
+\mathbf{K}_c \boldsymbol{\alpha} = (n\lambda) \boldsymbol{\alpha}
+\]
+\end{formula}
+Thus, we solve the $n \times n$ eigenproblem $\mathbf{K}_c \boldsymbol{\alpha} = \tilde{\lambda} \boldsymbol{\alpha}$, where $\tilde{\lambda} = n\lambda$. The eigenvectors $\boldsymbol{\alpha}^{(k)}$ of $\mathbf{K}_c$ are the coefficients for the principal components $\mathbf{v}_k = \mathbf{\Phi}_c \boldsymbol{\alpha}^{(k)}$ in the feature space.
+
+\subsection*{3. Why Centering is Required}
+PCA is defined as maximizing variance around the \textbf{mean}.
+\begin{itemize}
+    \item In feature space, the mean is $\bar{\phi} = \frac{1}{n}\sum_i \phi(\mathbf{x}_i)$.
+    \item The true covariance operator is $C = \frac{1}{n}\sum_i (\phi(\mathbf{x}_i) - \bar{\phi}) \otimes (\phi(\mathbf{x}_i) - \bar{\phi})$.
+    \item If you do not center, you would use $\tilde{C} = \frac{1}{n}\sum_i \phi(\mathbf{x}_i) \otimes \phi(\mathbf{x}_i)$. This finds components explaining variance around the \emph{origin}, not the mean. The first component would likely just point from the origin to the mean $\bar{\phi}$.
+    \item Centering the features $\phi(\mathbf{x})$ corresponds algebraically to centering the Gram matrix: $\mathbf{K} \to \mathbf{K}_c = \mathbf{H} \mathbf{K} \mathbf{H}$.
+    \item Only the eigenvectors of $\mathbf{K}_c$ correspond to the eigenvectors of the true covariance $C$. Using $\mathbf{K}$ would give the wrong principal components.
+\end{itemize}
+
+\subsection*{4. Projection of a New Point}
+We project a new point $\mathbf{x}$ onto the $k$-th principal component $\mathbf{v}_k$. The projection (score) is $y_k(\mathbf{x})$. We must use the centered feature map for the new point, $\phi_c(\mathbf{x}) = \phi(\mathbf{x}) - \bar{\phi}$.
+\begin{align*}
+y_k(\mathbf{x}) &= \langle \mathbf{v}_k, \phi_c(\mathbf{x}) \rangle_{\mathcal{H}} \\
+&= \langle \mathbf{\Phi}_c \boldsymbol{\alpha}^{(k)}, \phi_c(\mathbf{x}) \rangle \\
+&= \langle \sum_{i=1}^n \alpha_i^{(k)} \phi_c(\mathbf{x}_i), \phi_c(\mathbf{x}) \rangle \\
+&= \sum_{i=1}^n \alpha_i^{(k)} \langle \phi_c(\mathbf{x}_i), \phi_c(\mathbf{x}) \rangle
+\end{align*}
+We define the centered kernel evaluation $K_c(\mathbf{x}_i, \mathbf{x}) = \langle \phi_c(\mathbf{x}_i), \phi_c(\mathbf{x}) \rangle$.
+
+\begin{formula}[Centered Kernel Evaluation]
+\begin{align*}
+K_c(\mathbf{x}_i, \mathbf{x}) = K(\mathbf{x}_i, \mathbf{x}) &- \frac{1}{n}\sum_{j=1}^n K(\mathbf{x}_j, \mathbf{x}) \\
+&- \frac{1}{n}\sum_{j=1}^n K(\mathbf{x}_i, \mathbf{x}_j) + \frac{1}{n^2}\sum_{p,q} K(\mathbf{x}_p, \mathbf{x}_q)
+\end{align*}
+\end{formula}
+
+The final projection is the sum of these centered kernel evaluations, weighted by the eigenvector $\boldsymbol{\alpha}^{(k)}$.
+
+\begin{formula}[KPCA Projection]
+\[
+y_k(\mathbf{x}) = \sum_{i=1}^n \alpha_i^{(k)} K_c(\mathbf{x}_i, \mathbf{x})
+\]
+\end{formula}
+
+\subsection*{5. Computational Complexity}
+Let $n$ be the number of training points and $D$ the input dimension.
+\begin{itemize}
+    \item \textbf{Build Gram matrix $\mathbf{K}$:} $O(n^2)$ kernel evaluations. If kernel cost is $O(D)$, total time is $O(n^2 D)$. Memory is $O(n^2)$.
+    \item \textbf{Center Gram matrix $\mathbf{K}_c = \mathbf{H} \mathbf{K} \mathbf{H}$:} $O(n^2)$ time.
+    \item \textbf{Eigen-decomposition of $\mathbf{K}_c$:} $O(n^3)$ time for a full decomposition. To find the top $m$ components, iterative methods (e.g., Lanczos) cost $O(n^2 m)$.
+    \item \textbf{Projection for new $\mathbf{x}$:}
+    \begin{enumerate}
+        \item Compute $k(\mathbf{X}, \mathbf{x})$ (vector of $n$ kernels): $O(nD)$.
+        \item Center this vector (compute $K_c(\mathbf{X}, \mathbf{x})$): $O(n^2)$. (This is slow, but can be optimized by pre-computing row/column sums of $\mathbf{K}$).
+        \item Compute $m$ projections: $O(nm)$.
+    \end{enumerate}
+\end{itemize}
+The $O(n^3)$ training cost is the main bottleneck, limiting KPCA to $n \lesssim 10^4$.
+
+\subsection*{6. Practical Summary}
+\begin{itemize}
+    \item \textbf{Always} use the centered Gram matrix $\mathbf{K}_c = \mathbf{H} \mathbf{K} \mathbf{H}$.
+    \item Solve the $n \times n$ eigenproblem $\mathbf{K}_c \boldsymbol{\alpha} = \tilde{\lambda} \boldsymbol{\alpha}$.
+    \item The principal axis in $\mathcal{H}$ is $\mathbf{v} = \mathbf{\Phi}_c \boldsymbol{\alpha}$.
+    \item The projection of a new point $\mathbf{x}$ is $y(\mathbf{x}) = \sum_i \alpha_i K_c(\mathbf{x}_i, \mathbf{x})$.
+    \item Complexity is dominated by $O(n^2 D)$ to build $\mathbf{K}$ and $O(n^3)$ to solve for $\boldsymbol{\alpha}$.
+\end{itemize}
+% ============================================================
+
 
 \end{multicols}
 \end{document}
