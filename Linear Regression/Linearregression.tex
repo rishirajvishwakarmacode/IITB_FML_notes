@@ -4586,8 +4586,947 @@ Expand and collect terms:
 \end{align*}
 % ============================================================
 % ============================================================
+% ============================================================
+\section*{Weight vector}
 
+The optimal weight vector $\mathbf{w}$ can be expressed entirely in terms of the data points $\mathbf{x}_i$ and the dual variables $\alpha_i$.
+
+\subsection*{Derivation from the Lagrangian}
+We start with the Lagrangian (for both soft and hard margin SVMs). The terms that involve $\mathbf{w}$ are:
+\[
+\mathcal{L}(\mathbf{w},\dots)
+= \frac{1}{2} \mathbf{w}^\top \mathbf{w} - \sum_{i=1}^N \alpha_i y_i \mathbf{w}^\top \mathbf{x}_i + (\text{terms not involving }\mathbf{w}).
+\]
+To find the optimal $\mathbf{w}$ for the dual problem, we minimize $\mathcal{L}$ with respect to the primal variables. We take the gradient of $\mathcal{L}$ with respect to $\mathbf{w}$:
+\[
+\nabla_{\mathbf{w}} \mathcal{L} = \frac{\partial}{\partial \mathbf{w}} \left( \frac{1}{2} \mathbf{w}^\top \mathbf{w} - \sum_{i=1}^N \alpha_i y_i \mathbf{w}^\top \mathbf{x}_i \right)
+\]
+Using basic vector calculus:
+\begin{itemize}
+    \item $\nabla_{\mathbf{w}} (\frac{1}{2} \mathbf{w}^\top \mathbf{w}) = \mathbf{w}$
+    \item $\nabla_{\mathbf{w}} (\sum_i \alpha_i y_i \mathbf{w}^\top \mathbf{x}_i) = \nabla_{\mathbf{w}} \left( \mathbf{w}^\top \sum_i \alpha_i y_i \mathbf{x}_i \right) = \sum_i \alpha_i y_i \mathbf{x}_i$
+\end{itemize}
+This gives:
+\[
+\nabla_{\mathbf{w}} \mathcal{L} = \mathbf{w} - \sum_{i=1}^N \alpha_i y_i \mathbf{x}_i
+\]
+The stationarity condition (KKT) requires this gradient to be zero:
+\[
+\nabla_{\mathbf{w}} \mathcal{L} = 0 \quad \Rightarrow \quad \mathbf{w} - \sum_{i=1}^N \alpha_i y_i \mathbf{x}_i = 0
+\]
+Rearranging yields the expression for $\mathbf{w}$:
+\[
+\boxed{\,\mathbf{w} = \sum_{i=1}^N \alpha_i y_i \mathbf{x}_i\,}
+\]
+This shows that the optimal weight vector $\mathbf{w}$ is a linear combination of the feature vectors of the support vectors (those $\mathbf{x}_i$ for which $\alpha_i > 0$).
+% ============================================================
+% ============================================================
+\section*{Selection of Support Vectors}
+The KKT conditions provide a precise mathematical procedure for identifying support vectors from the optimal dual variables $\boldsymbol{\alpha}^\star$.
+
+\subsection*{1. Hard-Margin SVM}
+
+\paragraph{Dual (hard-margin):}
+\begin{align*}
+\max_{\boldsymbol{\alpha}}\quad &\sum_{i=1}^N \alpha_i -\frac{1}{2}\sum_{i=1}^N \sum_{j=1}^N \alpha_i\alpha_j y_i y_j (\mathbf{x}_i^\top \mathbf{x}_j) \\
+\text{s.t.}\quad &\alpha_i\ge0, \quad \sum_{i=1}^N \alpha_i y_i=0.
+\end{align*}
+
+\paragraph{KKT Complementary Slackness:}
+The primal constraint is $y_i(\mathbf{w}^\top \mathbf{x}_i + b) \ge 1$. The KKT condition is:
+\[
+\alpha_i\big(y_i(\mathbf{w}^\top \mathbf{x}_i + b)-1\big) = 0.
+\]
+\paragraph{Interpretation:}
+\begin{itemize}
+    \item If $\alpha_i = 0$: The constraint is inactive. This implies $y_i(\mathbf{w}^\top \mathbf{x}_i + b) > 1$. The point is strictly outside the margin and is \textbf{not a support vector}.
+    \item If $\alpha_i > 0$: The constraint must be active. This forces $y_i(\mathbf{w}^\top \mathbf{x}_i + b) = 1$. The point lies exactly on the margin and is a \textbf{support vector}.
+\end{itemize}
+
+\paragraph{Hard-Margin Support Vector Selection Rule:}
+\[
+\boxed{\text{Support vectors are exactly the indices } i \text{ such that } \alpha_i > 0.}
+\]
+
+\subsection*{2. Soft-Margin SVM}
+
+\paragraph{Dual (soft-margin):}
+\begin{align*}
+\max_{\boldsymbol{\alpha}}\quad &\sum_{i=1}^N \alpha_i - \frac{1}{2} \sum_{i=1}^N \sum_{j=1}^N \alpha_i\alpha_j y_i y_j K(\mathbf{x}_i, \mathbf{x}_j) \\
+\text{s.t.}\quad &0 \le \alpha_i \le C, \quad \sum_{i=1}^N \alpha_i y_i = 0.
+\end{align*}
+
+\paragraph{Key KKT Relations:}
+\begin{align*}
+\alpha_i( y_i(\mathbf{w}^\top \mathbf{x}_i + b) - 1 + \xi_i) &= 0 \tag{Primal slackness} \\
+\mu_i \xi_i &= 0 \tag{Dual slackness} \\
+\alpha_i + \mu_i &= C \tag{Stationarity w.r.t $\xi_i$}
+\end{align*}
+
+\paragraph{Soft-margin point categories from KKT:}
+Every training point falls into one of three categories:
+
+\begin{itemize}
+    \item \textbf{Case 1: $\alpha_i = 0$ (Non-Support Vector)} \\
+    From $\alpha_i + \mu_i = C$, we get $\mu_i = C > 0$.
+    From $\mu_i \xi_i = 0$, this forces $\xi_i = 0$.
+    The primal slackness condition $\alpha_i(\dots)=0$ is satisfied. The point satisfies $y_i(\mathbf{w}^\top \mathbf{x}_i + b) > 1$.
+    \textbf{Result:} Point is strictly outside the margin. Not a support vector.
+
+    \item \textbf{Case 2: $0 < \alpha_i < C$ (Margin Support Vector)} \\
+    From $\alpha_i + \mu_i = C$, we get $\mu_i = C-\alpha_i > 0$.
+    From $\mu_i \xi_i = 0$, this forces $\xi_i = 0$.
+    The primal slackness condition $\alpha_i(\dots)=0$ forces $y_i(\mathbf{w}^\top \mathbf{x}_i + b) - 1 + 0 = 0$.
+    \textbf{Result:} $y_i(\mathbf{w}^\top \mathbf{x}_i + b) = 1$. Point lies exactly on the margin. \textbf{This is a support vector}.
+
+    \item \textbf{Case 3: $\alpha_i = C$ (Violating Support Vector)} \\
+    From $\alpha_i + \mu_i = C$, we get $\mu_i = 0$.
+    Since $\mu_i = 0$, the condition $\mu_i \xi_i = 0$ is satisfied, and $\xi_i$ is free to be $\ge 0$.
+    The primal slackness condition $\alpha_i(\dots)=0$ forces $y_i(\mathbf{w}^\top \mathbf{x}_i + b) - 1 + \xi_i = 0$.
+    \textbf{Result:} $y_i(\mathbf{w}^\top \mathbf{x}_i + b) = 1 - \xi_i \le 1$. The point is either inside the margin (if $0 < \xi_i < 1$) or misclassified (if $\xi_i \ge 1$). \textbf{This is a support vector}.
+\end{itemize}
+
+\paragraph{Soft-Margin Support Vector Selection Rule:}
+\[
+\boxed{\text{Support vectors are all indices } i \text{ such that } \alpha_i > 0.}
+\]
+
+\subsection*{3. Final Summary Table}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Case} & \textbf{Dual value ($\alpha_i$)} & \textbf{Margin status} & \textbf{Support Vector?} \\
+\midrule
+Hard-margin & $\alpha_i > 0$ & On margin & Yes \\
+Hard-margin & $\alpha_i = 0$ & Outside margin & No \\
+\midrule
+Soft-margin & $0 < \alpha_i < C$ & On margin, $\xi_i=0$ & Yes (Margin SV) \\
+Soft-margin & $\alpha_i = C$ & Inside margin or misclassified, $\xi_i \ge 0$ & Yes (Violating SV) \\
+Soft-margin & $\alpha_i = 0$ & Outside margin, $\xi_i=0$ & No \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{4. Practical Mathematical Procedure}
+Given the optimal dual solution $\boldsymbol{\alpha}^\star$:
+\begin{enumerate}
+    \item Compute the set of all support vectors:
+    \[
+    S = \{ i : \alpha_i^\star > 0 \}
+    \]
+    \item Partition $S$ into margin and violating SVs:
+    \begin{itemize}
+        \item Margin SVs: $S_{\text{margin}} = \{ i \in S : 0 < \alpha_i^\star < C \}$
+        \item Violating SVs: $S_{\text{error}} = \{ i \in S : \alpha_i^\star = C \}$
+    \end{itemize}
+    \item Non-SVs are the remaining points:
+    \[
+    S_{\text{non}} = \{ i : \alpha_i^\star = 0 \}
+    \]
+\end{enumerate}
+% ============================================================
 
   
+\end{multicols}
+
+\chapter{Kernels}
+\begin{multicols}{2}
+% =================================S===========================
+\section*{Kernel Functions}
+A kernel is a function that allows us to compute inner products in a high-dimensional feature space without explicitly mapping to that space. This is known as the "kernel trick".
+
+\subsection*{Definition of a Kernel Function}
+A kernel function is a function $K: \mathbb{R}^D \times \mathbb{R}^D \to \mathbb{R}$ such that there exists a mapping $\phi: \mathbb{R}^D \to \mathcal{H}$ into some (possibly high-dimensional or infinite-dimensional) Hilbert space $\mathcal{H}$ satisfying:
+\[
+\boxed{\,K(\mathbf{x}, \mathbf{z}) = \langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle_{\mathcal{H}}\,}
+\]
+This allows us to compute the inner product in $\mathcal{H}$ without ever needing to compute $\phi(\mathbf{x})$ explicitly.
+
+\subsection*{Geometric Interpretation of a Kernel}
+
+\paragraph{1. Kernels compute dot products in a transformed space.}
+Even if your input $\mathbf{x}$ lives in $\mathbb{R}^D$, the kernel behaves as if you mapped the data into an enormous space $\mathcal{H}$ via $\mathbf{x} \mapsto \phi(\mathbf{x})$.
+Instead of computing $\phi(\mathbf{x})$, the kernel gives the geometric quantity needed:
+\[
+K(\mathbf{x}, \mathbf{z}) = \langle \phi(\mathbf{x}), \phi(\mathbf{z})\rangle.
+\]
+Geometrically, $K(\mathbf{x}, \mathbf{z})$ measures the similarity (angle, orientation) of the points in the feature space $\mathcal{H}$. The margin and separating hyperplane in SVMs are computed in $\mathcal{H}$, not the original input space.
+
+\paragraph{2. Kernel = Similarity Measure in Feature Space.}
+The kernel value corresponds to:
+\[
+K(\mathbf{x}, \mathbf{z}) = \|\phi(\mathbf{x})\|_{\mathcal{H}} \cdot \|\phi(\mathbf{z})\|_{\mathcal{H}} \cdot \cos(\theta),
+\]
+where $\theta$ is the angle between the transformed vectors.
+\begin{itemize}
+    \item Large $K(\mathbf{x}, \mathbf{z})$ $\to$ points are geometrically similar in $\mathcal{H}$.
+    \item Small/Zero $K(\mathbf{x}, \mathbf{z})$ $\to$ points are orthogonal or dissimilar in $\mathcal{H}$.
+\end{itemize}
+
+\paragraph{3. Kernel defines the SVM decision boundary.}
+The SVM classifier in the dual (kernelized) form is:
+\[
+f(\mathbf{x}) = \sum_{i \in \text{SV}} \alpha_i y_i K(\mathbf{x}_i, \mathbf{x}) + b.
+\]
+Geometrically, the decision function is a weighted sum of similarities between the test point $\mathbf{x}$ and the support vectors $\mathbf{x}_i$ in the feature space. The separating hyperplane is linear in $\mathcal{H}$ but nonlinear in $\mathbb{R}^D$.
+
+\paragraph{4. Kernel implicitly defines the geometry.}
+Different kernels correspond to different geometries for the decision boundary in the original space:
+\begin{itemize}
+    \item \textbf{Linear:} $K(\mathbf{x}, \mathbf{z}) = \mathbf{x}^\top \mathbf{z}$. Original space inner product.
+    \item \textbf{Polynomial:} $K(\mathbf{x}, \mathbf{z}) = (\mathbf{x}^\top \mathbf{z} + c)^p$. Space of monomials up to degree $p$.
+    \item \textbf{RBF / Gaussian:} $K(\mathbf{x}, \mathbf{z}) = \exp(-\gamma \|\mathbf{x}-\mathbf{z}\|^2)$. Infinite-dimensional feature space; distance-based similarity.
+\end{itemize}
+
+\subsection*{Final One-Line Summary}
+A kernel is a function that computes inner products in a high-dimensional feature space, allowing SVMs to construct linear geometric separators in that feature space, which are nonlinear in the original input space.
+% ============================================================
+% =
+\subsection*{Mercer's Theorem (Kernel Validity Check)}
+Mercer's theorem provides a practical way to check if a function $K(\mathbf{x}, \mathbf{z})$ is a valid kernel.
+
+\paragraph{Practical Definition:}
+A symmetric function, $K(\mathbf{x}, \mathbf{z}) = K(\mathbf{z}, \mathbf{x})$, is a valid kernel if and only if its Gram matrix is positive semidefinite (PSD) for every finite dataset.
+
+\paragraph{Step-by-step check:}
+\begin{enumerate}
+    \item Pick any finite set of points $\{\mathbf{x}_1, \dots, \mathbf{x}_N\}$.
+    \item Form the $N \times N$ Gram matrix $\mathbf{K}$ where $K_{ij} = K(\mathbf{x}_i, \mathbf{x}_j)$.
+    \item Check if $\mathbf{K}$ is positive semidefinite. This means for any vector $\mathbf{c} \in \mathbb{R}^N$:
+    \[
+    \mathbf{c}^\top \mathbf{K} \mathbf{c} \ge 0
+    \]
+    (Equivalently, all eigenvalues of $\mathbf{K}$ must be $\ge 0$).
+\end{enumerate}
+
+\paragraph{Concise Mercer Test:}
+\[
+\boxed{
+K(\mathbf{x},\mathbf{z})\text{ is a kernel } \iff \mathbf{K}_{ij}=K(\mathbf{x}_i,\mathbf{x}_j)\text{ is PSD for every finite set } \{\mathbf{x}_i\}.
+}
+\]
+
+\paragraph{Why this works:}
+Mercer's theorem (in one form) states that $K$ is a valid kernel if and only if
+\[
+\iint f(\mathbf{x}) K(\mathbf{x}, \mathbf{z}) f(\mathbf{z})\, d\mathbf{x}\, d\mathbf{z} \ge 0 \quad \forall f
+\]
+Checking that the Gram matrix $\mathbf{K}$ is PSD for every finite set of points is the discrete equivalent of this continuous condition.
+% ============================================================
+% ============================================================
+\section*{Verifying Kernels via Feature Maps (PSD Proofs)}
+A direct way to prove a kernel $K(\mathbf{x}, \mathbf{z})$ is positive semidefinite (PSD) is to find an explicit feature map $\phi$ such that $K(\mathbf{x}, \mathbf{z}) = \langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle$. If such a $\phi$ exists, Mercer's theorem is automatically satisfied.
+
+\subsection*{Example 1: Linear Kernel $K(\mathbf{x}, \mathbf{z}) = \mathbf{x}^\top \mathbf{z}$}
+We show $K$ is PSD by showing its Gram matrix $\mathbf{K}$ is PSD.
+By definition, $\mathbf{K}$ is PSD iff for every finite set $\{\mathbf{x}_1, \dots, \mathbf{x}_N\}$ and every $\mathbf{c} \in \mathbb{R}^N$:
+\[
+\mathbf{c}^\top \mathbf{K} \mathbf{c} = \sum_{i=1}^N\sum_{j=1}^N c_i c_j K(\mathbf{x}_i, \mathbf{x}_j) \ge 0.
+\]
+For the linear kernel, the feature map is simply $\phi(\mathbf{x}) = \mathbf{x}$.
+\begin{align*}
+\mathbf{c}^\top \mathbf{K} \mathbf{c}
+&= \sum_{i=1}^N\sum_{j=1}^N c_i c_j (\mathbf{x}_i^\top \mathbf{x}_j) \\
+&= \sum_{i=1}^N c_i \mathbf{x}_i^\top \sum_{j=1}^N c_j \mathbf{x}_j \\
+&= \left(\sum_{i=1}^N c_i \mathbf{x}_i\right)^\top \left(\sum_{j=1}^N c_j \mathbf{x}_j\right) \\
+&= \left\| \sum_{i=1}^N c_i \mathbf{x}_i \right\|^2 \ge 0.
+\end{align*}
+The result is a squared norm, which is non-negative. Thus the linear kernel is PSD.
+
+\subsection*{Example 2: Polynomial Kernel $K(\mathbf{x}, \mathbf{z}) = (\mathbf{x}^\top \mathbf{z} + 1)^2$}
+Let $\mathbf{x}, \mathbf{z} \in \mathbb{R}^D$. First, expand the kernel:
+\[
+K(\mathbf{x}, \mathbf{z}) = (\mathbf{x}^\top \mathbf{z})^2 + 2(\mathbf{x}^\top \mathbf{z}) + 1.
+\]
+We now construct an explicit feature map $\phi$. We need to list all degree-2 cross terms, degree-2 squared terms, degree-1 terms, and the constant term.
+For $\mathbf{x} \in \mathbb{R}^D$, define $\phi(\mathbf{x})$ as the vector:
+\[
+\phi(\mathbf{x}) =
+\big(
+    \underbrace{x_1^2, \dots, x_D^2}_{\text{D terms}},
+    \underbrace{\sqrt{2} x_i x_j}_{\text{for } i<j},
+    \underbrace{\sqrt{2} x_1, \dots, \sqrt{2} x_D}_{\text{D terms}},
+    1
+\big)
+\]
+Now we compute the inner product $\langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle$:
+\begin{align*}
+\langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle
+&= \sum_{i=1}^D (x_i^2 z_i^2) + \sum_{i<j} (\sqrt{2} x_i x_j)(\sqrt{2} z_i z_j) + \sum_{i=1}^D (\sqrt{2} x_i)(\sqrt{2} z_i) + 1\cdot 1 \\
+&= \sum_{i=1}^D x_i^2 z_i^2 + 2\sum_{i<j} x_i z_i x_j z_j + 2\sum_{i=1}^D x_i z_i + 1 \\
+&= \left( \sum_{i=1}^D x_i z_i \right)^2 + 2\left(\sum_{i=1}^D x_i z_i\right) + 1 \\
+&= (\mathbf{x}^\top \mathbf{z})^2 + 2(\mathbf{x}^\top \mathbf{z}) + 1 \\
+&= (\mathbf{x}^\top \mathbf{z} + 1)^2 = K(\mathbf{x}, \mathbf{z}).
+\end{align*}
+Since we have found an explicit feature map $\phi$ such that $K(\mathbf{x}, \mathbf{z}) = \langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle$, the kernel is PSD by the proof in the Mercer's Theorem section (where $\mathbf{c}^\top \mathbf{K} \mathbf{c} = \|\sum_i c_i \phi(\mathbf{x}_i) \|^2 \ge 0$).
+% ============================================================
+% ============================================================
+\section*{The RBF (Gaussian) Kernel}
+The RBF/Gaussian kernel $K(\mathbf{x}, \mathbf{z}) = \exp(-\gamma \|\mathbf{x}-\mathbf{z}\|^2)$ (where $\gamma = 1/(2\sigma^2)$) corresponds to an inner product in an **infinite-dimensional** feature space. We can show this by constructing the explicit feature map.
+
+\[
+K(\mathbf{x},\mathbf{z}) = \exp\!\left(-\frac{\|\mathbf{x}-\mathbf{z}\|^2}{2\sigma^2}\right)
+\]
+
+\subsection*{1. Algebraic Rearrangement}
+We expand the squared norm $\|\mathbf{x}-\mathbf{z}\|^2 = \|\mathbf{x}\|^2 + \|\mathbf{z}\|^2 - 2\mathbf{x}^\top \mathbf{z}$.
+\[
+K(\mathbf{x},\mathbf{z})
+= \exp\!\left(-\frac{\|\mathbf{x}\|^2}{2\sigma^2}\right)
+  \exp\!\left(-\frac{\|\mathbf{z}\|^2}{2\sigma^2}\right)
+  \exp\!\left(\frac{\mathbf{x}^\top \mathbf{z}}{\sigma^2}\right)
+\]
+To find the feature map, we only need to expand the cross-term $\exp(\mathbf{x}^\top \mathbf{z} / \sigma^2)$, as the other terms can be factored into $\langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle$.
+
+\subsection*{2. Power-Series Expansion}
+Using the Taylor series $\exp(t) = \sum_{k=0}^\infty \frac{t^k}{k!}$ with $t = \mathbf{x}^\top \mathbf{z} / \sigma^2$:
+\[
+\exp\!\left(\frac{\mathbf{x}^\top \mathbf{z}}{\sigma^2}\right)
+= \sum_{k=0}^\infty \frac{1}{k!} \frac{(\mathbf{x}^\top \mathbf{z})^k}{\sigma^{2k}}
+\]
+Each monomial $(\mathbf{x}^\top \mathbf{z})^k$ can be expanded using the multinomial theorem. Let $\boldsymbol{\alpha} = (\alpha_1, \dots, \alpha_D)$ be a multi-index with $|\boldsymbol{\alpha}| = \sum_i \alpha_i = k$. Let
+\[
+m_{\boldsymbol{\alpha}}(\mathbf{x}) = \sqrt{\frac{k!}{\boldsymbol{\alpha}!}} x_1^{\alpha_1} \cdots x_D^{\alpha_D}
+\]
+where $\boldsymbol{\alpha}! = \alpha_1! \cdots \alpha_D!$.
+Then the multinomial expansion gives $(\mathbf{x}^\top \mathbf{z})^k = \sum_{|\boldsymbol{\alpha}|=k} m_{\boldsymbol{\alpha}}(\mathbf{x}) m_{\boldsymbol{\alpha}}(\mathbf{z})$.
+Substituting this in:
+\[
+\exp\!\left(\frac{\mathbf{x}^\top \mathbf{z}}{\sigma^2}\right)
+= \sum_{k=0}^\infty \frac{1}{k! \sigma^{2k}} \sum_{|\boldsymbol{\alpha}|=k} m_{\boldsymbol{\alpha}}(\mathbf{x}) m_{\boldsymbol{\alpha}}(\mathbf{z})
+\]
+
+\subsection*{3. Assembling the Infinite-Dimensional Feature Map}
+Combine the Gaussian prefactors and the series:
+\begin{align*}
+K(\mathbf{x},\mathbf{z})
+&= \exp\!\left(-\frac{\|\mathbf{x}\|^2}{2\sigma^2}\right)\exp\!\left(-\frac{\|\mathbf{z}\|^2}{2\sigma^2}\right)
+\sum_{k=0}^\infty \frac{1}{k! \sigma^{2k}} \sum_{|\boldsymbol{\alpha}|=k} m_{\boldsymbol{\alpha}}(\mathbf{x}) m_{\boldsymbol{\alpha}}(\mathbf{z}) \\[4pt]
+% Group terms for x and z
+&= \sum_{k=0}^\infty \sum_{|\boldsymbol{\alpha}|=k}
+\left( \exp\!\left(-\frac{\|\mathbf{x}\|^2}{2\sigma^2}\right)\frac{m_{\boldsymbol{\alpha}}(\mathbf{x})}{\sigma^{k}\sqrt{k!}} \right)
+\left( \exp\!\left(-\frac{\|\mathbf{z}\|^2}{2\sigma^2}\right)\frac{m_{\boldsymbol{\alpha}}(\mathbf{z})}{\sigma^{k}\sqrt{k!}} \right)
+\end{align*}
+We can define the feature map $\phi(\mathbf{x})$ as the infinite vector whose components are indexed by $k$ and $\boldsymbol{\alpha}$ (with $|\boldsymbol{\alpha}|=k$):
+\[
+\phi_{k,\boldsymbol{\alpha}}(\mathbf{x})
+:=
+\exp\!\left(-\frac{\|\mathbf{x}\|^2}{2\sigma^2}\right) \frac{m_{\boldsymbol{\alpha}}(\mathbf{x})}{\sigma^{k}\sqrt{k!}}
+\]
+With this definition, we have shown:
+\[
+K(\mathbf{x},\mathbf{z}) = \langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle_{\ell^2}
+\]
+This is an inner product in an infinite-dimensional Hilbert space $\ell^2$ (the space of square-summable sequences).
+
+\subsection*{4. Why this proves Infinite Dimensionality}
+For each degree $k$, there are $\binom{D+k-1}{k}$ distinct multi-indices $\boldsymbol{\alpha}$. As $k$ ranges over all non-negative integers ($0, 1, 2, \dots$), the total number of components is infinite.
+Since the Taylor series for $\exp(t)$ contains non-zero terms for every $k$, infinitely many feature components are non-zero. No finite-length vector $\phi(\mathbf{x}) \in \mathbb{R}^M$ can reproduce this kernel for all $\mathbf{x}, \mathbf{z}$.
+
+\subsection*{5. Intuition}
+The RBF kernel is a weighted sum of inner products of all homogeneous monomials of all degrees (with Gaussian damping), so it behaves as if data were embedded into a space containing all polynomial features, which is infinite-dimensional.
+% ============================================================
+% ============================================================
+\section*{Cosine Similarity Kernel}
+We analyze the kernel $K(\mathbf{x}, \mathbf{z}) = \frac{\mathbf{x}^\top \mathbf{z}}{\|\mathbf{x}\| \|\mathbf{z}\|}$, for $\mathbf{x}, \mathbf{z} \in \mathbb{R}^D \setminus \{\mathbf{0}\}$.
+
+\subsection*{Feature Map}
+We can define an explicit feature map $\phi$ that normalizes the input vectors:
+\[
+\phi: \mathbb{R}^D \setminus \{\mathbf{0}\} \to \mathbb{R}^D, \qquad \phi(\mathbf{x}) = \frac{\mathbf{x}}{\|\mathbf{x}\|}
+\]
+Then for all non-zero $\mathbf{x}, \mathbf{z}$, the kernel is the inner product of these normalized vectors:
+\[
+K(\mathbf{x}, \mathbf{z}) = \frac{\mathbf{x}^\top \mathbf{z}}{\|\mathbf{x}\| \|\mathbf{z}\|} = \left\langle \frac{\mathbf{x}}{\|\mathbf{x}\|}, \frac{\mathbf{z}}{\|\mathbf{z}\|} \right\rangle = \langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle
+\]
+(This can be extended to handle zero vectors by defining $\phi(\mathbf{0}) = \mathbf{0}$ and $K(\mathbf{0}, \mathbf{z}) = 0$.)
+
+\subsection*{Proof of PSD}
+Since we have found an explicit feature map $\phi$, we can use the standard proof. Take any finite set $\{\mathbf{x}_1, \dots, \mathbf{x}_N\} \subset \mathbb{R}^D \setminus \{\mathbf{0}\}$ and any $\mathbf{c} \in \mathbb{R}^N$. Form the Gram matrix $\mathbf{K}$ with entries $K_{ij} = K(\mathbf{x}_i, \mathbf{x}_j) = \langle \phi(\mathbf{x}_i), \phi(\mathbf{x}_j) \rangle$. Then:
+\begin{align*}
+\mathbf{c}^\top \mathbf{K} \mathbf{c}
+&= \sum_{i=1}^N \sum_{j=1}^N c_i c_j \langle \phi(\mathbf{x}_i), \phi(\mathbf{x}_j) \rangle \\
+&= \left\langle \sum_{i=1}^N c_i \phi(\mathbf{x}_i), \sum_{j=1}^N c_j \phi(\mathbf{x}_j) \right\rangle \\
+&= \left\| \sum_{i=1}^N c_i \phi(\mathbf{x}_i) \right\|^2 \ge 0
+\end{align*}
+The Gram matrix is positive semidefinite for every finite set. The function is also symmetric since $K(\mathbf{x}, \mathbf{z}) = K(\mathbf{z}, \mathbf{x})$.
+
+\subsection*{Conclusion}
+The cosine similarity function is a valid positive semidefinite kernel.
+% ============================================================
+% ============================================================
+\section*{Constructing Kernels}
+We can prove a function is a valid PSD kernel by constructing its feature map.
+
+\subsection*{1. Feature Map for the Sum of Kernels}
+If $K_1(\mathbf{x}, \mathbf{z}) = \langle \phi_1(\mathbf{x}), \phi_1(\mathbf{z}) \rangle_{\mathcal{H}_1}$ and $K_2(\mathbf{x}, \mathbf{z}) = \langle \phi_2(\mathbf{x}), \phi_2(\mathbf{z}) \rangle_{\mathcal{H}_2}$ are valid kernels, then their sum $K = K_1 + K_2$ is also a valid kernel.
+
+We define a new feature map $\phi$ by concatenating the individual feature maps:
+\[
+\phi(\mathbf{x}) = \big( \phi_1(\mathbf{x}), \phi_2(\mathbf{x}) \big) \in \mathcal{H}_1 \oplus \mathcal{H}_2
+\]
+This new vector lives in the direct sum of the two Hilbert spaces. The inner product in this combined space is the sum of the inner products in the component spaces.
+\begin{align*}
+(K_1 + K_2)(\mathbf{x}, \mathbf{z})
+&= K_1(\mathbf{x}, \mathbf{z}) + K_2(\mathbf{x}, \mathbf{z}) \\
+&= \langle \phi_1(\mathbf{x}), \phi_1(\mathbf{z}) \rangle_{\mathcal{H}_1} + \langle \phi_2(\mathbf{x}), \phi_2(\mathbf{z}) \rangle_{\mathcal{H}_2} \\
+&= \big\langle (\phi_1(\mathbf{x}), \phi_2(\mathbf{x})), (\phi_1(\mathbf{z}), \phi_2(\mathbf{z})) \big\rangle_{\mathcal{H}_1 \oplus \mathcal{H}_2} \\
+&= \langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle_{\mathcal{H}_1 \oplus \mathcal{H}_2}
+\end{align*}
+Since $K_1 + K_2$ is an inner product, it is a valid PSD kernel.
+
+\subsection*{2. Feature Map for $K(\mathbf{x}, \mathbf{z}) = \exp(\mathbf{x}^\top \mathbf{z})$}
+We use the exponential power series and the multinomial expansion.
+First, the Taylor series for $\exp(t)$:
+\[
+\exp(\mathbf{x}^\top \mathbf{z}) = \sum_{k=0}^{\infty} \frac{(\mathbf{x}^\top \mathbf{z})^k}{k!}
+\]
+Next, the multinomial expansion for $(\mathbf{x}^\top \mathbf{z})^k$:
+\[
+(\mathbf{x}^\top \mathbf{z})^k = \left(\sum_{i=1}^D x_i z_i \right)^k = \sum_{|\boldsymbol{\alpha}|=k} \frac{k!}{\boldsymbol{\alpha}!} \mathbf{x}^{\boldsymbol{\alpha}} \mathbf{z}^{\boldsymbol{\alpha}}
+\]
+where $\boldsymbol{\alpha} = (\alpha_1, \dots, \alpha_D)$ is a multi-index, $|\boldsymbol{\alpha}| = \sum_i \alpha_i = k$, $\boldsymbol{\alpha}! = \prod_i \alpha_i!$, and $\mathbf{x}^{\boldsymbol{\alpha}} = \prod_i x_i^{\alpha_i}$.
+
+Substitute the expansion into the series:
+\begin{align*}
+\exp(\mathbf{x}^\top \mathbf{z})
+&= \sum_{k=0}^\infty \frac{1}{k!} \sum_{|\boldsymbol{\alpha}|=k} \frac{k!}{\boldsymbol{\alpha}!} \mathbf{x}^{\boldsymbol{\alpha}} \mathbf{z}^{\boldsymbol{\alpha}} \\
+&= \sum_{k=0}^\infty \sum_{|\boldsymbol{\alpha}|=k} \frac{\mathbf{x}^{\boldsymbol{\alpha}}}{\sqrt{\boldsymbol{\alpha}!}} \cdot \frac{\mathbf{z}^{\boldsymbol{\alpha}}}{\sqrt{\boldsymbol{\alpha}!}}
+\end{align*}
+This is an inner product. We can define an explicit (infinite-dimensional) feature map $\phi$ whose components are indexed by all possible multi-indices $\boldsymbol{\alpha}$:
+\[
+\boxed{\,\phi_{\boldsymbol{\alpha}}(\mathbf{x}) = \frac{\mathbf{x}^{\boldsymbol{\alpha}}}{\sqrt{\boldsymbol{\alpha}!}}\,}
+\]
+With this $\phi$, we have:
+\[
+\exp(\mathbf{x}^\top \mathbf{z}) = \sum_{\boldsymbol{\alpha}} \phi_{\boldsymbol{\alpha}}(\mathbf{x}) \phi_{\boldsymbol{\alpha}}(\mathbf{z}) = \langle \phi(\mathbf{x}), \phi(\mathbf{z}) \rangle_{\ell^2}
+\]
+Since $K(\mathbf{x}, \mathbf{z})$ is an inner product in an infinite-dimensional Hilbert space, it is a valid PSD kernel.
+% ============================================================
+% ============================================================
+\section*{Kernelisation of Linear Models}
+
+\subsection*{3. The Representer Theorem}
+A standard result (the Representer Theorem) shows that any minimizer $\mathbf{w}^\star$ of the above problem admits an expansion as a linear combination of the feature-mapped training data:
+% --- Using the 'formula' box defined in your preamble
+\begin{formula}[Representer Theorem]
+\[
+\mathbf{w}^\star = \sum_{i=1}^N \alpha_i \phi(\mathbf{x}_i)
+\]
+\end{formula}
+for some coefficients $\boldsymbol{\alpha} \in \mathbb{R}^N$.
+(Proof idea: Decompose any $\mathbf{w}$ into a component in $\mathrm{span}(\{\phi(\mathbf{x}_i)\})$ and an orthogonal component. The orthogonal component only increases the regularizer $\|\mathbf{w}\|^2$ without improving the empirical loss, so it must be zero at the minimum.)
+
+\subsection*{4. Kernelized Decision Function}
+We derive the kernelized decision function by plugging the representation of $\mathbf{w}^\star$ from the Representer Theorem back into the linear model:
+\begin{align*}
+f(\mathbf{x}) &= (\mathbf{w}^\star)^\top \phi(\mathbf{x}) + b \\
+&= \left(\sum_{i=1}^N \alpha_i \phi(\mathbf{x}_i)\right)^\top \phi(\mathbf{x}) + b \\
+&= \sum_{i=1}^N \alpha_i \langle\phi(\mathbf{x}_i), \phi(\mathbf{x})\rangle + b
+\end{align*}
+Now, we replace the inner product with the kernel function $K(\mathbf{x}_i, \mathbf{x})$:
+% --- Using the 'formula' box
+\begin{formula}[Kernelized Decision Function]
+\[
+f(\mathbf{x}) = \sum_{i=1}^N \alpha_i K(\mathbf{x}_i, \mathbf{x}) + b
+\]
+\end{formula}
+This decision function only requires evaluations of the kernel $K$, never the explicit feature map $\phi$.
+
+\subsection*{5. Examples of Kernelized Models}
+\paragraph{(A) SVM Stationarity (Hard/Soft Margin)}
+As shown previously, the KKT stationarity condition for SVMs yields $\mathbf{w} = \sum_i \alpha_i y_i \phi(\mathbf{x}_i)$. The prediction function becomes:
+\[
+f(\mathbf{x}) = \mathbf{w}^\top\phi(\mathbf{x})+b = \sum_i \alpha_i y_i K(\mathbf{x}_i, \mathbf{x}) + b
+\]
+Here, the coefficients $\alpha_i$ are the dual variables (many of which are zero).
+
+\paragraph{(B) Kernel Ridge Regression}
+The primal problem in $\mathcal{H}$ is:
+\[
+\min_{\mathbf{w}} \frac{1}{N} \|\mathbf{y} - \mathbf{\Phi} \mathbf{w}\|^2 + \lambda \|\mathbf{w}\|^2
+\]
+where $\mathbf{\Phi}$ is the $N \times \dim(\mathcal{H})$ matrix of feature vectors $\phi(\mathbf{x}_i)^\top$. Using the Representer Theorem ($\mathbf{w} = \mathbf{\Phi}^\top \boldsymbol{\alpha}$) and solving for $\boldsymbol{\alpha}$ gives:
+\[
+\boldsymbol{\alpha} = (\mathbf{K} + N\lambda \mathbf{I})^{-1} \mathbf{y}
+\]
+where $\mathbf{K}$ is the $N \times N$ Gram matrix ($K_{ij} = K(\mathbf{x}_i, \mathbf{x}_j)$). The prediction is:
+\[
+f(\mathbf{x}) = \sum_i \alpha_i K(\mathbf{x}_i, \mathbf{x})
+\]
+
+\subsection*{6. Practical Consequences}
+\begin{itemize}
+    \item We can learn nonlinear decision boundaries by choosing a nonlinear kernel (Polynomial, RBF, etc.).
+    \item All training computations reduce to operations on the $N \times N$ Gram matrix $\mathbf{K}$.
+    \item Prediction complexity is $O(N)$ per test point, as we must compute the kernel between $\mathbf{x}$ and all $N$ training points (or just the support vectors if $\boldsymbol{\alpha}$ is sparse, as in SVM).
+\end{itemize}
+% ============================================================
+% ============================================================
+\section*{Kernelisation via the Representer Theorem}
+
+The Representer Theorem is a powerful result that justifies kernelising many linear models. It states that for any regularized risk minimization problem of the form:
+\[
+\min_{\mathbf{w} \in \mathcal{H}} L(\text{data}, \mathbf{w}) + \Omega(\|\mathbf{w}\|^2)
+\]
+where $\Omega$ is a strictly increasing function (e.g., L2 regularization $\frac{\lambda}{2}\|\mathbf{w}\|^2$), the optimal solution $\mathbf{w}^\star$ must lie in the span of the feature-mapped training data.
+
+\begin{formula}[Representer Theorem]
+The optimal $\mathbf{w}^\star$ can be written as:
+\[
+\mathbf{w}^\star = \sum_{j=1}^N \alpha_j \phi(\mathbf{x}_j) = \mathbf{\Phi}^\top \boldsymbol{\alpha}
+\]
+\end{formula}
+where $\boldsymbol{\alpha}$ is a vector of $N$ coefficients. This theorem allows us to convert the optimization problem from finding an (often infinite-dimensional) $\mathbf{w}$ to finding a finite, $N$-dimensional vector $\boldsymbol{\alpha}$.
+
+\subsection*{1. Kernel Ridge Regression (KRR)}
+
+\paragraph{Primal Problem:}
+KRR minimizes the L2-regularized squared loss in the feature space $\mathcal{H}$:
+\[
+J(\mathbf{w}) = \sum_{i=1}^N (y_i - \mathbf{w}^\top \phi(\mathbf{x}_i))^2 + \lambda \|\mathbf{w}\|^2
+\]
+In matrix form: $J(\mathbf{w}) = \|\mathbf{y} - \mathbf{\Phi}\mathbf{w}\|^2 + \lambda \|\mathbf{w}\|^2$.
+
+\paragraph{Apply Theorem:}
+We substitute $\mathbf{w} = \sum_j \alpha_j \phi(\mathbf{x}_j) = \mathbf{\Phi}^\top \boldsymbol{\alpha}$.
+\begin{enumerate}
+    \item The prediction vector $\mathbf{\Phi}\mathbf{w}$ becomes:
+    \[
+    \mathbf{\Phi}\mathbf{w} = \mathbf{\Phi}(\mathbf{\Phi}^\top \boldsymbol{\alpha}) = (\mathbf{\Phi}\mathbf{\Phi}^\top) \boldsymbol{\alpha} = \mathbf{K}\boldsymbol{\alpha}
+    \]
+    where $\mathbf{K} = \mathbf{\Phi}\mathbf{\Phi}^\top$ is the $N \times N$ Gram matrix ($K_{ij} = \langle \phi(\mathbf{x}_i), \phi(\mathbf{x}_j) \rangle$).
+    \item The regularizer $\|\mathbf{w}\|^2$ becomes:
+    \[
+    \|\mathbf{w}\|^2 = \mathbf{w}^\top \mathbf{w} = (\mathbf{\Phi}^\top \boldsymbol{\alpha})^\top (\mathbf{\Phi}^\top \boldsymbol{\alpha}) = \boldsymbol{\alpha}^\top (\mathbf{\Phi}\mathbf{\Phi}^\top) \boldsymbol{\alpha} = \boldsymbol{\alpha}^\top \mathbf{K} \boldsymbol{\alpha}
+    \]
+\end{enumerate}
+
+\paragraph{Kernelized Objective:}
+By substituting these into $J(\mathbf{w})$, we get the kernelized objective $J(\boldsymbol{\alpha})$:
+\[
+J(\boldsymbol{\alpha}) = \|\mathbf{y} - \mathbf{K}\boldsymbol{\alpha}\|^2 + \lambda \boldsymbol{\alpha}^\top \mathbf{K} \boldsymbol{\alpha}
+\]
+This is a convex quadratic function of $\boldsymbol{\alpha}$. We solve by setting $\nabla_{\boldsymbol{\alpha}} J = 0$:
+\[
+\nabla_{\boldsymbol{\alpha}} J = \nabla_{\boldsymbol{\alpha}} (\mathbf{y}^\top\mathbf{y} - 2\mathbf{y}^\top\mathbf{K}\boldsymbol{\alpha} + \boldsymbol{\alpha}^\top\mathbf{K}^2\boldsymbol{\alpha}) + \lambda (2\mathbf{K}\boldsymbol{\alpha})
+\]
+\[
+\nabla_{\boldsymbol{\alpha}} J = -2\mathbf{K}^\top\mathbf{y} + 2\mathbf{K}^\top\mathbf{K}\boldsymbol{\alpha} + 2\lambda\mathbf{K}\boldsymbol{\alpha} = 0
+\]
+Since $\mathbf{K}^\top = \mathbf{K}$:
+\[
+-2\mathbf{K}\mathbf{y} + 2\mathbf{K}\mathbf{K}\boldsymbol{\alpha} + 2\lambda\mathbf{K}\boldsymbol{\alpha} = 0
+\]
+\[
+\mathbf{K} (\mathbf{K}\boldsymbol{\alpha} - \mathbf{y} + \lambda\mathbf{I}\boldsymbol{\alpha}) = 0
+\]
+This implies the solution satisfies:
+\[
+(\mathbf{K} + \lambda\mathbf{I})\boldsymbol{\alpha} = \mathbf{y}
+\]
+\begin{formula}[KRR Solution]
+The coefficients are $\boldsymbol{\alpha}^\star = (\mathbf{K} + \lambda\mathbf{I})^{-1} \mathbf{y}$.
+The prediction for a new point $\mathbf{x}$ is:
+\[
+f(\mathbf{x}) = \mathbf{w}^\top \phi(\mathbf{x}) = (\mathbf{\Phi}^\top \boldsymbol{\alpha})^\top \phi(\mathbf{x}) = \boldsymbol{\alpha}^\top \mathbf{\Phi} \phi(\mathbf{x})
+= \sum_{i=1}^N \alpha_i K(\mathbf{x}_i, \mathbf{x})
+\]
+\end{formula}
+
+\subsection*{2. Kernel Logistic Regression}
+
+\paragraph{Primal Problem:}
+We minimize the L2-regularized negative log-likelihood (binary cross-entropy). Let $y_i \in \{-1, +1\}$.
+\[
+J(\mathbf{w}) = \sum_{i=1}^N \log(1 + \exp(-y_i \mathbf{w}^\top \phi(\mathbf{x}_i))) + \frac{\lambda}{2} \|\mathbf{w}\|^2
+\]
+
+\paragraph{Apply Theorem:}
+Substitute $\mathbf{w} = \sum_j \alpha_j \phi(\mathbf{x}_j)$.
+\begin{enumerate}
+    \item The score $\mathbf{w}^\top \phi(\mathbf{x}_i)$ becomes:
+    \[
+    \mathbf{w}^\top \phi(\mathbf{x}_i) = \left(\sum_j \alpha_j \phi(\mathbf{x}_j)\right)^\top \phi(\mathbf{x}_i) = \sum_j \alpha_j K(\mathbf{x}_i, \mathbf{x}_j) = (\mathbf{K}\boldsymbol{\alpha})_i
+    \]
+    This is the $i$-th element of the vector $\mathbf{K}\boldsymbol{\alpha}$.
+    \item The regularizer $\|\mathbf{w}\|^2$ becomes $\boldsymbol{\alpha}^\top \mathbf{K} \boldsymbol{\alpha}$.
+\end{enumerate}
+
+\paragraph{Kernelized Objective:}
+\begin{formula}[Kernel Logistic Regression Objective]
+\[
+J(\boldsymbol{\alpha}) = \sum_{i=1}^N \log(1 + \exp(-y_i (\mathbf{K}\boldsymbol{\alpha})_i)) + \frac{\lambda}{2} \boldsymbol{\alpha}^\top \mathbf{K} \boldsymbol{\alpha}
+\]
+\end{formula}
+There is \textbf{no closed-form solution} for $\boldsymbol{\alpha}$. This $N$-dimensional problem must be solved numerically (e.g., using gradient descent or Newton's method on $\boldsymbol{\alpha}$).
+
+\subsection*{3. Support Vector Machine (SVM)}
+
+\paragraph{Primal Problem:}
+The SVM primal objective (in hinge-loss form) is:
+\[
+J(\mathbf{w}, b) = \sum_{i=1}^N \max(0, 1 - y_i(\mathbf{w}^\top\phi(\mathbf{x}_i) + b)) + \frac{\lambda}{2} \|\mathbf{w}\|^2
+\]
+(This is the "$\lambda$-SVM" form, which is equivalent to the "$C$-SVM" form where $C \propto 1/\lambda$).
+
+\paragraph{Apply Theorem:}
+The Representer Theorem guarantees the solution $\mathbf{w}^\star$ must lie in the span of the data:
+\[
+\mathbf{w}^\star = \sum_{j=1}^N \beta_j \phi(\mathbf{x}_j)
+\]
+The standard SVM dual derivation is a more direct way to find the coefficients. It shows that they have a specific form: $\beta_j = \alpha_j y_j$, where $\alpha_j$ are the dual variables.
+\[
+\mathbf{w}^\star = \sum_{j=1}^N \alpha_j y_j \phi(\mathbf{x}_j)
+\]
+This $\mathbf{w}$ is what we derived from the KKT stationarity condition earlier. The Representer Theorem is the underlying justification for why $\mathbf{w}$ *must* take this form.
+
+\paragraph{Kernelized Prediction Function:}
+We kernelize the prediction function $f(\mathbf{x}) = \mathbf{w}^\top\phi(\mathbf{x}) + b$ by substituting this form of $\mathbf{w}$:
+\begin{align*}
+f(\mathbf{x}) &= \left( \sum_{i=1}^N \alpha_i y_i \phi(\mathbf{x}_i) \right)^\top \phi(\mathbf{x}) + b \\
+&= \sum_{i=1}^N \alpha_i y_i \langle \phi(\mathbf{x}_i), \phi(\mathbf{x}) \rangle + b
+\end{align*}
+\begin{formula}[SVM Kernelized Prediction]
+\[
+f(\mathbf{x}) = \sum_{i=1}^N \alpha_i y_i K(\mathbf{x}_i, \mathbf{x}) + b
+\]
+\end{formula}
+The coefficients $\boldsymbol{\alpha}$ are found not by minimizing a kernelized primal, but by solving the (simpler) kernelized dual problem (which we've already covered).
+% ============================================================
+% ============================================================
+\section*{Kernelised Ridge Regression (KRR)}
+
+\subsection*{1. Primal Problem in Feature Space}
+Let $\phi: \mathbb{R}^D \to \mathcal{H}$ be a feature map. The primal problem for KRR minimizes the L2-regularized squared loss in the feature space $\mathcal{H}$.
+\[
+\min_{\mathbf{w} \in \mathcal{H}} \frac{1}{2} \sum_{i=1}^N (y_i - \mathbf{w}^\top\phi(\mathbf{x}_i))^2 + \frac{\lambda}{2}\|\mathbf{w}\|_{\mathcal{H}}^2
+\]
+(We omit the bias term $b$ for simplicity, assuming data is centered or $b$ is absorbed via feature augmentation).
+
+Let $\mathbf{\Phi}$ be the $N \times \dim(\mathcal{H})$ matrix whose $i$-th row is $\phi(\mathbf{x}_i)^\top$. The objective in matrix form is:
+\[
+\min_{\mathbf{w}} \frac{1}{2}\|\mathbf{y} - \mathbf{\Phi} \mathbf{w}\|^2 + \frac{\lambda}{2}\|\mathbf{w}\|_{\mathcal{H}}^2
+\]
+Taking the derivative w.r.t.\ $\mathbf{w}$ and setting to zero gives the normal equations in feature space:
+\[
+\mathbf{\Phi}^\top(\mathbf{\Phi} \mathbf{w} - \mathbf{y}) + \lambda \mathbf{w} = \mathbf{0}
+\quad\Longrightarrow\quad
+(\mathbf{\Phi}^\top\mathbf{\Phi} + \lambda \mathbf{I}) \mathbf{w} = \mathbf{\Phi}^\top \mathbf{y} \tag{P1}
+\]
+
+\subsection*{2. Dual Form Derivation}
+We use the Representer Theorem, which states the solution $\mathbf{w}$ must lie in the span of the training features: $\mathbf{w} = \mathbf{\Phi}^\top \boldsymbol{\alpha}$ for some $\boldsymbol{\alpha} \in \mathbb{R}^N$.
+We substitute this into the primal objective $J(\mathbf{w})$:
+\begin{itemize}
+    \item \textbf{Residual Term:} $\mathbf{y} - \mathbf{\Phi} \mathbf{w} = \mathbf{y} - \mathbf{\Phi}(\mathbf{\Phi}^\top \boldsymbol{\alpha}) = \mathbf{y} - (\mathbf{\Phi}\mathbf{\Phi}^\top) \boldsymbol{\alpha} = \mathbf{y} - \mathbf{K}\boldsymbol{\alpha}$
+    \item \textbf{Regularizer Term:} $\|\mathbf{w}\|_{\mathcal{H}}^2 = \|\mathbf{\Phi}^\top\boldsymbol{\alpha}\|_{\mathcal{H}}^2 = (\mathbf{\Phi}^\top\boldsymbol{\alpha})^\top(\mathbf{\Phi}^\top\boldsymbol{\alpha}) = \boldsymbol{\alpha}^\top (\mathbf{\Phi}\mathbf{\Phi}^\top) \boldsymbol{\alpha} = \boldsymbol{\alpha}^\top \mathbf{K} \boldsymbol{\alpha}$
+\end{itemize}
+Here, $\mathbf{K} = \mathbf{\Phi}\mathbf{\Phi}^\top$ is the $N \times N$ kernel (Gram) matrix.
+The objective, now a function of $\boldsymbol{\alpha}$, is:
+\[
+J(\boldsymbol{\alpha}) = \frac{1}{2}\|\mathbf{y} - \mathbf{K}\boldsymbol{\alpha}\|^2 + \frac{\lambda}{2}\boldsymbol{\alpha}^\top \mathbf{K}\boldsymbol{\alpha}
+\]
+Differentiate w.r.t.\ $\boldsymbol{\alpha}$ and set to zero:
+\[
+\nabla_{\boldsymbol{\alpha}} J = -\mathbf{K}^\top(\mathbf{y} - \mathbf{K}\boldsymbol{\alpha}) + \lambda \mathbf{K}\boldsymbol{\alpha} = \mathbf{0}
+\]
+Since $\mathbf{K}$ is symmetric ($\mathbf{K}^\top = \mathbf{K}$):
+\[
+-\mathbf{K}\mathbf{y} + \mathbf{K}^2\boldsymbol{\alpha} + \lambda \mathbf{K}\boldsymbol{\alpha} = \mathbf{0}
+\]
+\[
+\mathbf{K}(\mathbf{K} + \lambda \mathbf{I})\boldsymbol{\alpha} = \mathbf{K}\mathbf{y}
+\]
+Assuming $\mathbf{K}$ is invertible (or restricting to its column space), we get:
+\[
+(\mathbf{K} + \lambda \mathbf{I})\boldsymbol{\alpha} = \mathbf{y}
+\]
+\[
+\boxed{\,\boldsymbol{\alpha} = (\mathbf{K} + \lambda \mathbf{I})^{-1} \mathbf{y}\,}
+\]
+
+\subsection*{3. Prediction Formula}
+Given $\boldsymbol{\alpha}$, the prediction for a new point $\mathbf{x}$ is:
+\begin{align*}
+\hat{f}(\mathbf{x}) &= \mathbf{w}^\top\phi(\mathbf{x}) = (\mathbf{\Phi}^\top\boldsymbol{\alpha})^\top\phi(\mathbf{x}) = \boldsymbol{\alpha}^\top \mathbf{\Phi}\phi(\mathbf{x}) \\
+&= \sum_{i=1}^N \alpha_i \langle\phi(\mathbf{x}_i), \phi(\mathbf{x})\rangle = \sum_{i=1}^N \alpha_i K(\mathbf{x}_i, \mathbf{x})
+\end{align*}
+In vector form, $k(\mathbf{x}, \mathbf{X}) = [K(\mathbf{x}, \mathbf{x}_1), \dots, K(\mathbf{x}, \mathbf{x}_N)]$:
+\[
+\boxed{\,f(\mathbf{x}) = k(\mathbf{x}, \mathbf{X}) \boldsymbol{\alpha}\,}
+\]
+The vector of fitted values on the training set is $\hat{\mathbf{y}} = \mathbf{K}\boldsymbol{\alpha}$.
+
+\subsection*{4. Primal-Dual Equivalence}
+The explicit link is $\mathbf{w} = \mathbf{\Phi}^\top \boldsymbol{\alpha}$. Substituting the solution for $\boldsymbol{\alpha}$:
+\[
+\boxed{\,\mathbf{w} = \mathbf{\Phi}^\top \boldsymbol{\alpha} = \mathbf{\Phi}^\top (\mathbf{K} + \lambda \mathbf{I})^{-1} \mathbf{y}\,}
+\]
+$\mathbf{w}$ (primal) is a linear combination of training feature vectors $\phi(\mathbf{x}_i)$ with coefficients $\alpha_i$ (dual).
+
+\subsection*{5. RKHS Norm as Regularizer}
+The primal regularizer $\|\mathbf{w}\|_{\mathcal{H}}^2$ is equivalent to a penalty on $\boldsymbol{\alpha}$:
+\[
+\|\mathbf{w}\|_{\mathcal{H}}^2 = \|\mathbf{\Phi}^\top\boldsymbol{\alpha}\|_{\mathcal{H}}^2 = \boldsymbol{\alpha}^\top (\mathbf{\Phi}\mathbf{\Phi}^\top) \boldsymbol{\alpha} = \boldsymbol{\alpha}^\top \mathbf{K} \boldsymbol{\alpha}
+\]
+Minimizing $\|\mathbf{w}\|^2$ is exactly penalizing the RKHS norm of the predictor.
+
+\subsection*{6. Why $\lambda$ Ensures Invertibility}
+$\mathbf{K}$ is symmetric positive semidefinite (PSD). Its eigendecomposition is $\mathbf{K} = \mathbf{U}\mathbf{\Lambda} \mathbf{U}^\top$, where $\mathbf{\Lambda} = \operatorname{diag}(\lambda_1, \dots, \lambda_N)$ with $\lambda_j \ge 0$.
+\[
+\mathbf{K} + \lambda \mathbf{I} = \mathbf{U}\mathbf{\Lambda} \mathbf{U}^\top + \lambda \mathbf{U}\mathbf{I}\mathbf{U}^\top = \mathbf{U}(\mathbf{\Lambda} + \lambda \mathbf{I})\mathbf{U}^\top
+\]
+The eigenvalues of $\mathbf{K} + \lambda \mathbf{I}$ are $(\lambda_j + \lambda)$. Since $\lambda > 0$ and $\lambda_j \ge 0$, every eigenvalue $(\lambda_j + \lambda)$ is strictly positive.
+A symmetric matrix with strictly positive eigenvalues is positive definite (PD) and thus invertible. This is Tikhonov regularization.
+
+\subsection*{7. LOOCV Formula for KRR}
+KRR is a linear smoother: $\hat{\mathbf{y}} = \mathbf{H} \mathbf{y}$, with hat matrix $\mathbf{H} = \mathbf{K} (\mathbf{K} + \lambda \mathbf{I})^{-1}$.
+The leave-one-out (LOO) residual for point $i$ can be computed cheaply without re-training:
+\[
+y_i - \hat{y}_i^{(-i)} = \frac{y_i - \hat{y}_i}{1 - H_{ii}}
+\]
+The LOOCV Mean Squared Error is:
+\[
+\text{LOOCV} = \frac{1}{N}\sum_{i=1}^N \left(\frac{y_i - \hat{y}_i}{1 - H_{ii}}\right)^2
+\]
+This avoids recomputing $N$ models.
+
+\subsection*{8. Computational Cost}
+\begin{itemize}
+    \item \textbf{Training (Gram Matrix):} $O(N^2 D)$ to compute $\mathbf{K}$.
+    \item \textbf{Training (Solve):} $O(N^3)$ to solve $(\mathbf{K} + \lambda \mathbf{I})\boldsymbol{\alpha} = \mathbf{y}$ via Cholesky decomposition.
+    \item \textbf{Prediction:} $O(ND)$ to compute $k(\mathbf{x}, \mathbf{X})$ and $O(N)$ for the final dot product. Total: $O(ND)$.
+\end{itemize}
+The $O(N^3)$ training cost limits direct KRR to $N \lesssim 10^4$.
+
+\subsection*{9. KRR vs. Kernel OLS}
+Kernel OLS would solve $\mathbf{K} \boldsymbol{\alpha} = \mathbf{y}$. This is bad:
+\begin{enumerate}
+    \item $\mathbf{K}$ is often singular (e.g., if $D > N$) or ill-conditioned.
+    \item $\lambda > 0$ ensures $\mathbf{K} + \lambda \mathbf{I}$ is invertible and stable.
+    \item $\lambda$ controls the bias-variance tradeoff and prevents overfitting.
+\end{enumerate}
+
+\subsection*{10. Toy Numeric Example (3-point dataset)}
+Let $\mathbf{x} = [1, 2, 3]^\top$, $\mathbf{y} = [1, 2, 3]^\top$. Use linear kernel $K(\mathbf{x}_i, \mathbf{x}_j) = \mathbf{x}_i \mathbf{x}_j$ and $\lambda = 1$.
+\[
+\mathbf{K} = \begin{bmatrix} 1&2&3 \\ 2&4&6 \\ 3&6&9 \end{bmatrix}, \quad \lambda\mathbf{I} = \begin{bmatrix} 1&0&0 \\ 0&1&0 \\ 0&0&1 \end{bmatrix}
+\]
+\[
+(\mathbf{K} + \lambda \mathbf{I}) = \begin{bmatrix} 2&2&3 \\ 2&5&6 \\ 3&6&10 \end{bmatrix}
+\]
+Solve $(\mathbf{K} + \lambda \mathbf{I})\boldsymbol{\alpha} = \mathbf{y}$:
+\[
+\begin{pmatrix} 2&2&3 \\ 2&5&6 \\ 3&6&10 \end{pmatrix} \begin{pmatrix} \alpha_1 \\ \alpha_2 \\ \alpha_3 \end{pmatrix} = \begin{pmatrix} 1 \\ 2 \\ 3 \end{pmatrix}
+\quad\Longrightarrow\quad
+\boldsymbol{\alpha} = \begin{pmatrix} 1/15 \\ 2/15 \\ 3/15 \end{pmatrix}
+\]
+Predictions on training points:
+\[
+\hat{\mathbf{y}} = \mathbf{K}\boldsymbol{\alpha} = \begin{bmatrix} 1&2&3 \\ 2&4&6 \\ 3&6&9 \end{bmatrix} \begin{pmatrix} 1/15 \\ 2/15 \\ 3/15 \end{pmatrix} = \begin{pmatrix} 14/15 \\ 28/15 \\ 42/15 \end{pmatrix} \approx \begin{pmatrix} 0.933 \\ 1.867 \\ 2.800 \end{pmatrix}
+\]
+The predictions are shrunk towards zero by the regularizer.
+
+\subsection*{11. Why $\lambda$ Controls Smoothness}
+As $\lambda \to \infty$, the solution $\boldsymbol{\alpha} = (\mathbf{K} + \lambda \mathbf{I})^{-1} \mathbf{y} \to \mathbf{0}$. This makes $f(\mathbf{x}) \to 0$.
+As $\lambda \to 0$, $\boldsymbol{\alpha} \to \mathbf{K}^{-1}\mathbf{y}$, which is the non-regularized (and likely overfit) solution.
+Spectrally, $\boldsymbol{\alpha} = \mathbf{U}(\mathbf{\Lambda} + \lambda \mathbf{I})^{-1} \mathbf{U}^\top \mathbf{y}$. A large $\lambda$ heavily dampens components corresponding to small eigenvalues $\lambda_j$, which often represent high-frequency/non-smooth functions. Thus, increasing $\lambda$ increases smoothness.
+
+\subsection*{Final Compact Summary}
+\begin{itemize}
+    \item \textbf{Dual solution:} $\boldsymbol{\alpha} = (\mathbf{K} + \lambda \mathbf{I})^{-1} \mathbf{y}$.
+    \item \textbf{Prediction:} $f(\mathbf{x}) = k(\mathbf{x}, \mathbf{X})\boldsymbol{\alpha} = \sum_i \alpha_i K(\mathbf{x}_i, \mathbf{x})$.
+    \item \textbf{Primal-dual link:} $\mathbf{w} = \mathbf{\Phi}^\top\boldsymbol{\alpha}$ and $\|\mathbf{w}\|^2 = \boldsymbol{\alpha}^\top \mathbf{K} \boldsymbol{\alpha}$ (RKHS norm).
+    \item \textbf{Invertibility:} $\lambda > 0 \implies (\mathbf{K} + \lambda \mathbf{I})$ is PD and invertible.
+    \item \textbf{LOOCV:} Use hat matrix $\mathbf{H} = \mathbf{K}(\mathbf{K} + \lambda \mathbf{I})^{-1}$ and LOO residual $\frac{y_i - \hat{y}_i}{1 - H_{ii}}$.
+\end{itemize}
+% ============================================================
+% ============================================================
+\section*{Kernelised SVM}
+
+\subsection*{1. How the SVM Dual is Kernelized}
+We start from the soft-margin dual, expressed in a general feature space $\mathcal{H}$ using the map $\phi$:
+\begin{align*}
+\max_{\boldsymbol{\alpha}}\quad & L_D(\boldsymbol{\alpha})
+= \sum_{i=1}^N \alpha_i - \frac{1}{2}\sum_{i=1}^N\sum_{j=1}^N \alpha_i\alpha_j y_i y_j \langle \phi(\mathbf{x}_i),\phi(\mathbf{x}_j)\rangle_{\mathcal{H}} \\[4pt]
+\text{s.t.}\quad & 0\le \alpha_i \le C, \quad \sum_{i=1}^N \alpha_i y_i = 0.
+\end{align*}
+The \textbf{kernel trick} is to replace every inner product $\langle\phi(\mathbf{x}_i),\phi(\mathbf{x}_j)\rangle$ with a kernel function $K(\mathbf{x}_i, \mathbf{x}_j)$.
+This gives the final, solvable \textbf{Kernelized SVM Dual}:
+
+\begin{formula}[Kernelized SVM Dual Problem]
+\begin{align*}
+\max_{\boldsymbol{\alpha}}\quad & \sum_{i=1}^N \alpha_i - \frac{1}{2}\sum_{i,j}\alpha_i\alpha_j y_i y_j K(\mathbf{x}_i, \mathbf{x}_j) \\[4pt]
+\text{s.t.}\quad & 0\le\alpha_i\le C,\quad \sum_{i=1}^N \alpha_i y_i = 0.
+\end{align*}
+\end{formula}
+The problem is now entirely in terms of the $N \times N$ Gram matrix $\mathbf{K}$ and the coefficients $\boldsymbol{\alpha}$, with no explicit reference to the (possibly infinite-dimensional) feature space.
+
+\subsection*{2. Kernel SVM Decision Function}
+From the KKT stationarity condition, the optimal primal weight vector $\mathbf{w}^\star$ (in feature space $\mathcal{H}$) is:
+\[
+\mathbf{w}^\star = \sum_{i=1}^N \alpha_i^\star y_i \phi(\mathbf{x}_i)
+\]
+The prediction for a new test point $\mathbf{x}$ is $f(\mathbf{x}) = (\mathbf{w}^\star)^\top \phi(\mathbf{x}) + b^\star$. Substituting $\mathbf{w}^\star$:
+\begin{align*}
+f(\mathbf{x}) &= \left(\sum_{i=1}^N \alpha_i^\star y_i \phi(\mathbf{x}_i)\right)^\top \phi(\mathbf{x}) + b^\star \\[4pt]
+&= \sum_{i=1}^N \alpha_i^\star y_i \langle \phi(\mathbf{x}_i), \phi(\mathbf{x}) \rangle + b^\star
+\end{align*}
+Applying the kernel trick $\langle \phi(\mathbf{x}_i), \phi(\mathbf{x}) \rangle = K(\mathbf{x}_i, \mathbf{x})$:
+
+\begin{formula}[Kernel SVM Decision Function]
+\[
+f(\mathbf{x}) = \sum_{i=1}^N \alpha_i y_i K(\mathbf{x}_i, \mathbf{x}) + b
+\]
+The prediction is $\hat{y} = \operatorname{sign}(f(\mathbf{x}))$. The sum only includes support vectors (where $\alpha_i > 0$).
+\end{formula}
+
+\subsection*{3. Why Support Vectors Depend on Kernel Choice}
+Support vectors are the training indices $i$ with $\alpha_i > 0$ at the optimum.
+\begin{itemize}
+    \item The kernel $K$ defines the quadratic part of the dual objective via the matrix $\mathbf{Q}$, where $Q_{ij} = y_i y_j K(\mathbf{x}_i, \mathbf{x}_j)$.
+    \item Changing $K$ changes $\mathbf{Q}$, which fundamentally changes the geometry of the optimization problem (its curvature and the coupling between variables).
+    \item Therefore, the optimal solution $\boldsymbol{\alpha}^\star$ depends on $K$.
+    \item \textbf{Geometrically:} The kernel defines the feature map $\phi$ and thus the geometry (distances and angles) of the data in feature space. A point $\mathbf{x}_i$ that is a support vector (on or inside the margin) for one kernel may be far from the margin (and thus $\alpha_i=0$) for another.
+\end{itemize}
+
+\subsection*{4. Linear vs. Kernel SVM Decision Boundaries}
+\paragraph{Linear SVM}
+(This is just $K(\mathbf{x}, \mathbf{z}) = \mathbf{x}^\top \mathbf{z}$, so $\phi(\mathbf{x}) = \mathbf{x}$).
+\begin{itemize}
+    \item The decision boundary is a hyperplane in the \textbf{input space}:
+    \[
+    f(\mathbf{x}) = \mathbf{w}^\top \mathbf{x} + b = 0
+    \]
+    \item This is a linear separator (a line in 2D, a plane in 3D).
+\end{itemize}
+
+\paragraph{Kernel SVM (non-linear kernel)}
+\begin{itemize}
+    \item The SVM finds a linear hyperplane in the \textbf{feature space} $\mathcal{H}$:
+    \[
+    \mathbf{w}^\top \phi(\mathbf{x}) + b = 0
+    \]
+    \item When this linear boundary from $\mathcal{H}$ is mapped back to the original input space, it becomes a \textbf{nonlinear decision boundary}.
+    \item A polynomial kernel $K$ gives a polynomial boundary. An RBF kernel $K$ gives a flexible, contour-like boundary.
+\end{itemize}
+
+\subsection*{5. RBF SVM can Separate Any Finite Dataset}
+Let the Gaussian (RBF) kernel be $K(\mathbf{x}, \mathbf{z}) = \exp(-\gamma \|\mathbf{x}-\mathbf{z}\|^2)$.
+\begin{enumerate}
+    \item \textbf{Key Fact:} For any set of distinct training points $\{\mathbf{x}_1, \dots, \mathbf{x}_N\}$, the Gaussian Gram matrix $\mathbf{K}$ (where $K_{ij} = K(\mathbf{x}_i, \mathbf{x}_j)$) is \textbf{strictly positive definite} and thus invertible.
+    \item \textbf{Constructive Proof:} Since $\mathbf{K}$ is invertible, for any target vector $\mathbf{t} \in \mathbb{R}^N$, we can solve $\mathbf{K}\boldsymbol{\alpha} = \mathbf{t}$ to find $\boldsymbol{\alpha} = \mathbf{K}^{-1}\mathbf{t}$.
+    \item Let's choose our target vector to be the (scaled) labels: $\mathbf{t} = \tau \mathbf{y}$, where $\mathbf{y} \in \{-1, +1\}^N$ are the labels and $\tau > 0$ is a margin.
+    \item This gives $\boldsymbol{\alpha} = \mathbf{K}^{-1}(\tau \mathbf{y})$.
+    \item Consider the kernel SVM decision function $f(\mathbf{x}) = \sum_j \alpha_j K(\mathbf{x}_j, \mathbf{x})$ (with $b=0$). Let's evaluate this function on the training points:
+    \[
+    f(\mathbf{x}_i) = \sum_{j=1}^N \alpha_j K(\mathbf{x}_j, \mathbf{x}_i) = (\mathbf{K} \boldsymbol{\alpha})_i = (\mathbf{t})_i = \tau y_i
+    \]
+    \item Check the margin: $y_i f(\mathbf{x}_i) = y_i (\tau y_i) = \tau y_i^2 = \tau > 0$.
+\end{enumerate}
+This shows that a function of the form $f(\mathbf{x}) = \sum_i \alpha_i K(\mathbf{x}_i, \mathbf{x})$ exists that perfectly separates any finite, distinct dataset with a margin of $\tau$. An SVM with a sufficiently large $C$ will find such a separating hyperplane.
+% ============================================================
+\subsection*{1. Effect of Extremely Large Kernel Bandwidth ($\sigma \to \infty$)}
+For the RBF kernel, $K(\mathbf{x},\mathbf{z})=\exp(-\|\mathbf{x}-\mathbf{z}\|^2/(2\sigma^2))$.
+As $\sigma \to \infty$, the exponent approaches zero:
+\[
+\frac{\|\mathbf{x}-\mathbf{z}\|^2}{2\sigma^2} \to 0
+\quad\Rightarrow\quad
+K(\mathbf{x},\mathbf{z}) \to e^0 = 1
+\]
+The kernel matrix $\mathbf{K}$ becomes a matrix of all ones:
+\[
+K(\mathbf{x},\mathbf{z}) \approx 1 \quad \forall \mathbf{x},\mathbf{z} \quad\Rightarrow\quad \mathbf{K} \approx \mathbf{1}\mathbf{1}^\top
+\]
+\paragraph{Consequences:}
+\begin{itemize}
+    \item All points are treated as equally similar (identical) in the feature space.
+    \item The Gram matrix $\mathbf{K}$ becomes a rank-1 matrix.
+    \item The SVM sees no structure in the data and loses all nonlinearity. The decision boundary collapses to a single linear classifier.
+    \item The model \textbf{heavily underfits}.
+\end{itemize}
+
+\subsection*{2. Effect of Extremely Small Kernel Bandwidth ($\sigma \to 0$)}
+As $\sigma \to 0$, the exponent approaches infinity for any non-identical points.
+\begin{itemize}
+    \item If $\mathbf{x} = \mathbf{z}$: $K(\mathbf{x},\mathbf{x}) = \exp(0) = 1$.
+    \item If $\mathbf{x} \neq \mathbf{z}$: $K(\mathbf{x},\mathbf{z}) = \exp\left(-\frac{\|\mathbf{x}-\mathbf{z}\|^2}{2\sigma^2}\right) \to 0$.
+\end{itemize}
+The kernel matrix $\mathbf{K}$ becomes the identity matrix:
+\[
+\mathbf{K} \approx \mathbf{I}_N
+\]
+\paragraph{Consequences:}
+\begin{itemize}
+    \item Every point is orthogonal to every other point in the feature space.
+    \item The feature space is extremely "spread-out," and any finite dataset becomes linearly separable.
+    \item An SVM with a large $C$ will fit every single training point exactly, leading to \textbf{severe overfitting}.
+    \item The classifier "memorizes" the training data and behaves like a nearest-neighbor classifier.
+\end{itemize}
+
+\subsection*{3. Kernel SVM Overfitting Behaviour}
+SVM overfits when the classifier becomes too flexible and "memorizes" the training data. This is caused by a combination of:
+\begin{itemize}
+    \item \textbf{Small bandwidth ($\sigma$):} As shown above, this makes the kernel too localized and "spiky," allowing the model to draw complex boundaries that isolate individual points.
+    \item \textbf{Large $C$ (low regularization):} The objective is $\min \frac{1}{2}\|\mathbf{w}\|^2 + C\sum \xi_i$. A large $C$ heavily penalizes any slack $\xi_i$, forcing the model to achieve zero training error (or as close as possible), even if it requires a very complex boundary (a large $\|\mathbf{w}\|$ in the feature space).
+\end{itemize}
+\[
+\textbf{(small bandwidth $\sigma$)} + \textbf{(large $C$)} \quad\Rightarrow\quad \text{Overfitting}
+\]
+
+\subsection*{4. Role of Kernel Matrix Conditioning}
+The $N \times N$ Gram matrix $\mathbf{K}$ plays the same role for the dual problem as the covariance matrix $\mathbf{X}^\top\mathbf{X}$ does for the primal.
+\begin{itemize}
+    \item \textbf{Well-conditioned $\mathbf{K}$:} All eigenvalues are reasonably large and not too close to zero. The dual optimization is stable. The solution (e.g., in KRR, $\boldsymbol{\alpha} = (\mathbf{K} + \lambda \mathbf{I})^{-1} \mathbf{y}$) is stable and behaves smoothly. This leads to good generalization.
+    \item \textbf{Ill-conditioned $\mathbf{K}$ (nearly singular):} The matrix has very small eigenvalues. This can happen if $\sigma$ is too large (matrix $\to$ rank-1) or if data points are duplicated or nearly collinear in the feature space.
+    \begin{itemize}
+        \item This leads to numerical instability in the QP solver.
+        \item The resulting $\boldsymbol{\alpha}$ vector can be huge and highly sensitive to small changes in the data, leading to poor generalization.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{5. How Kernel Centering Affects SVM}
+Centering the kernel corresponds to centering the data in the feature space $\mathcal{H}$.
+Given $\mathbf{K}$, the centered kernel matrix is $\mathbf{K}_c = \mathbf{H} \mathbf{K} \mathbf{H}$, where $\mathbf{H} = \mathbf{I} - \frac{1}{N}\mathbf{1}\mathbf{1}^\top$ is the centering matrix.
+This is equivalent to using the centered feature map:
+\[
+\phi_c(\mathbf{x}) = \phi(\mathbf{x}) - \frac{1}{N}\sum_{j=1}^N \phi(\mathbf{x}_j) = \phi(\mathbf{x}) - \bar{\phi}
+\]
+The inner product changes:
+\[
+\langle \phi_c(\mathbf{x}_i), \phi_c(\mathbf{x}_j) \rangle = K_{ij} - \bar{\phi}^\top\phi(\mathbf{x}_i) - \bar{\phi}^\top\phi(\mathbf{x}_j) + \|\bar{\phi}\|^2
+\]
+This changes the geometry of the feature space and thus the resulting hyperplane.
+\paragraph{However:}
+The standard SVM model includes a bias term $b$. The SVM is translation-invariant in the feature space. A model trained on centered data, $(\mathbf{w}_c)^\top \phi_c(\mathbf{x}) + b_c$, is equivalent to a model trained on uncentered data, $\mathbf{w}^\top \phi(\mathbf{x}) + b$.
+\[
+\mathbf{w}^\top (\phi(\mathbf{x}) - \bar{\phi}) + b' = \mathbf{w}^\top \phi(\mathbf{x}) + (b' - \mathbf{w}^\top \bar{\phi})
+\]
+The model simply learns a different bias term $b = (b' - \mathbf{w}^\top \bar{\phi})$ and the same $\mathbf{w}$.
+\paragraph{Practical Summary:}
+\begin{itemize}
+    \item For SVM \textbf{with a bias term $b$}, centering the kernel has no effect on the final decision boundary.
+    \item For SVM \textbf{without a bias term $b$}, centering matters and will change the solution.
+    \item (Note: Kernel PCA always requires a centered kernel.)
+\end{itemize}
+
+\subsection*{Final Summary}
+\begin{itemize}
+    \item \textbf{Bandwidth Effects:}
+    \begin{itemize}
+        \item $\sigma \to \infty$: $K \to \mathbf{1}\mathbf{1}^\top$ (rank 1) $\implies$ \textbf{Underfits} (linear classifier).
+        \item $\sigma \to 0$: $K \to \mathbf{I}$ (identity) $\implies$ \textbf{Overfits} (memorizes data).
+    \end{itemize}
+    \item \textbf{SVM Overfitting:} Caused by $\textbf{small } \sigma$ (high flexibility) + $\textbf{large } C$ (low regularization).
+    \item \textbf{Conditioning:} An ill-conditioned $\mathbf{K}$ (nearly singular) leads to an unstable optimization and poor generalization.
+    \item \textbf{Centering:} Centers the feature map $\phi_c(\mathbf{x}) = \phi(\mathbf{x}) - \bar{\phi}$. This \textbf{does not affect} the final SVM decision boundary as long as a bias term $b$ is included in the model.
+\end{itemize}
+% ============================================================
+
+% ============================================================
+
 \end{multicols}
 \end{document}
